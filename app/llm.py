@@ -8,7 +8,7 @@ def ollama_base_url() -> str:
 
 
 def ollama_model() -> str:
-    return os.environ.get("OLLAMA_MODEL", "qwen2.5:3b")
+    return os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
 
 
 def ollama_timeout() -> float:
