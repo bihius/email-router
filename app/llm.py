@@ -16,6 +16,11 @@ def ollama_timeout() -> float:
     return float(os.environ.get("OLLAMA_TIMEOUT", "180"))
 
 
+def ollama_num_ctx() -> int:
+    """Context tokens allocated when the model loads. Set OLLAMA_NUM_CTX in .env."""
+    return int(os.environ.get("OLLAMA_NUM_CTX", "2048"))
+
+
 def ask_ollama(prompt: str) -> str:
     """Send one plain chat message to Ollama and return the assistant text.
 
@@ -26,6 +31,7 @@ def ask_ollama(prompt: str) -> str:
         json={
             "model": ollama_model(),
             "stream": False,
+            "options": {"num_ctx": ollama_num_ctx()},
             "messages": [{"role": "user", "content": prompt}],
         },
         timeout=ollama_timeout(),

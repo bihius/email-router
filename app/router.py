@@ -4,7 +4,7 @@ from typing import Any
 import httpx
 
 from app.departments import Department
-from app.llm import ollama_base_url, ollama_model, ollama_timeout
+from app.llm import ollama_base_url, ollama_model, ollama_num_ctx, ollama_timeout
 from app.mailer import send_email
 
 SYSTEM_PROMPT = """You route one internal ticket by calling send_email exactly once.
@@ -57,6 +57,7 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
             "model": ollama_model(),
             "stream": False,
             "tools": [send_email_tool()],
+            "options": {"num_ctx": ollama_num_ctx()},
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": message},
