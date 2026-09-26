@@ -12,6 +12,9 @@ docker compose up -d --build
 | --- | --- |
 | API docs | <http://localhost:8000/api/v1/docs> |
 | MailHog UI | <http://localhost:8025> |
+| Ollama | <http://localhost:11434> |
+
+Default model: `llama3.2:1b` (pulled by the `ollama-pull` one-shot service on first `compose up`).
 
 ## Example request
 
