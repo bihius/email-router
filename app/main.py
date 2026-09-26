@@ -13,7 +13,37 @@ app = FastAPI(
 )
 
 
-@app.post("/api/v1/route", response_model=RouteResponse)
+@app.post(
+    "/api/v1/route",
+    response_model=RouteResponse,
+    responses={
+        422: {
+            "description": "The JSON body is invalid. For example the email is not an address, or message is empty.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "type": "value_error",
+                                "loc": ["body", "email"],
+                                "msg": "value is not a valid email address",
+                                "input": "nie-adres",
+                            }
+                        ]
+                    }
+                }
+            },
+        },
+        502: {
+            "description": "Ollama answered with text and did not call send_email, so no mail was sent.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "model returned no send_email tool call"}
+                }
+            },
+        },
+    },
+)
 def route_message(payload: RouteRequest) -> RouteResponse:
     """Accept a ticket. Ollama picks the department by calling send_email."""
     try:
