@@ -24,7 +24,17 @@ The API container starts after `ollama-pull` has finished, so the model is downl
 
 `data/departments.csv` has three columns: `name`, `email`, `description`. The system prompt is built from the name and the description. The model never sees the address. `send_email` uses the email from that row, and `Reply-To` is the sender from the request. Add a department by adding a row. The file must include a row named `other`.
 
-Long base64 (a footer image) is removed from the text sent to the model. The mail body stays the original message. Context 2048 is for the words, not for the image.
+Long base64 (a footer image) and a `--` signature are removed from the text sent to the model. The mail body stays the original message. Context 2048 is for the words, not for the image.
+
+## Architecture decisions
+
+- One tool, `send_email`. The department is an argument, and the allowed names come from the CSV catalog. There is not a separate tool for each department.
+- Departments live in `data/departments.csv` (`name`, `email`, `description`). They are not environment variables, and they are not hardcoded in the prompt. The prompt is built from each row's name and description. The model does not see the address.
+- A LangChain agent (`ChatOllama` and `create_agent`) calls that tool. The application does not parse a department name out of free-text prose. If the model answers with prose and never calls the tool, nothing is sent.
+- Compose uses the official MailHog image. The API sends the message to it over SMTP. `Reply-To` is the requester address. `To` is the department address.
+- Ollama uses `qwen2.5:7b` by default, with `num_ctx` 2048. The timeout comes from the environment. The `ollama-pull` one-shot must finish before the API starts.
+- `docker compose up -d --build` works with those defaults. No hand-made `.env` file is required.
+- Text sent to the model drops data-URI and long base64 blobs, then drops a signature that starts on a line of `--`. The email that is sent keeps the original message.
 
 ## Example request
 

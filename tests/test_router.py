@@ -51,6 +51,23 @@ class RouteTicketTest(unittest.TestCase):
         route_ticket(message=original, reply_to="jan.nowak@example.com")
         self.assertIn(blob, send_email.call_args.kwargs["body"])
 
+    @patch("app.mailer.send_email")
+    @patch("app.router.invoke_agent")
+    def test_model_text_drops_signature_but_mail_keeps_it(
+        self, invoke_agent, send_email
+    ) -> None:
+        original = "The computer does not start.\n-- \nJan Nowak"
+
+        def call_the_tool(agent, tool, user_text: str) -> None:
+            del agent
+            self.assertNotIn("Jan Nowak", user_text)
+            self.assertIn("The computer does not start.", user_text)
+            tool.invoke({"department": "it"})
+
+        invoke_agent.side_effect = call_the_tool
+        route_ticket(message=original, reply_to="jan.nowak@example.com")
+        self.assertEqual(send_email.call_args.kwargs["body"], original)
+
 
 if __name__ == "__main__":
     unittest.main()

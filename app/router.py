@@ -45,7 +45,8 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
     """Ask a LangChain agent to call send_email, then return the department it chose.
 
     Reply-To and the original body are closed over by the tool. The model only
-    picks a department name. Base64 is stripped from the text the model sees.
+    picks a department name. Base64 and a "--" signature footer are stripped
+    from the text the model sees.
     """
     sent: list[Department] = []
     names = tuple(item.name for item in DEPARTMENTS)
