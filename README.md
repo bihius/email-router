@@ -1,6 +1,6 @@
 # email-router
 
-Python based email router with a local LLM. The model picks a department by calling `send_email` (raw Ollama tools; LangChain comes later).
+Python based email router with a local LLM. A LangChain agent calls `send_email`; the department catalog is `data/departments.csv`.
 
 ## Run
 
