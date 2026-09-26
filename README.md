@@ -1,6 +1,6 @@
 # email-router
 
-Python based email router with local LLM (agent + tool calling). LLM wiring comes next; mail path already works.
+Python based email router with a local LLM. The model picks a department by calling `send_email` (raw Ollama tools; LangChain comes later).
 
 ## Run
 
@@ -19,15 +19,14 @@ Default model is set in `.env` (`OLLAMA_MODEL`, default `qwen2.5:7b`). The `olla
 
 ## Example request
 
-Department is temporary in the JSON until the agent chooses it:
+The model chooses the department by calling `send_email`. The request has no department field.
 
 ```bash
 curl -sS -X POST http://localhost:8000/api/v1/route \
   -H 'Content-Type: application/json' \
   -d '{
     "email": "jan.nowak@example.com",
-    "message": "Nie działa mi komputer",
-    "department": "it"
+    "message": "Nie działa mi komputer"
   }'
 ```
 

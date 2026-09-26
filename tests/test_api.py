@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+from app.departments import Department
 from app.main import app
 
 
@@ -14,31 +15,23 @@ class RouteEndpointTest(unittest.TestCase):
         response = self.client.get("/api/v1/docs")
         self.assertEqual(response.status_code, 200)
 
-    @patch("app.main.send_email")
-    def test_route_sends_mail_with_reply_to(self, send_email) -> None:
+    @patch("app.main.route_ticket", return_value=Department.IT)
+    def test_route_uses_model_choice(self, route_ticket) -> None:
         response = self.client.post(
             "/api/v1/route",
             json={
                 "email": "jan.nowak@example.com",
                 "message": "Nie działa mi komputer",
-                "department": "it",
             },
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json(),
-            {
-                "status": "sent",
-                "department": "it",
-                "to": "it@example.com",
-            },
+        self.assertEqual(response.json()["department"], "it")
+        self.assertEqual(response.json()["to"], "it@example.com")
+        route_ticket.assert_called_once_with(
+            message="Nie działa mi komputer",
+            reply_to="jan.nowak@example.com",
         )
-        send_email.assert_called_once()
-        kwargs = send_email.call_args.kwargs
-        self.assertEqual(kwargs["reply_to"], "jan.nowak@example.com")
-        self.assertEqual(kwargs["body"], "Nie działa mi komputer")
-        self.assertEqual(kwargs["department"].value, "it")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.departments import DEPARTMENT_EMAIL
-from app.mailer import send_email
+from app.router import ModelDidNotCallTool, route_ticket
 from app.schemas import RouteRequest, RouteResponse
 
 app = FastAPI(
@@ -15,15 +15,13 @@ app = FastAPI(
 
 @app.post("/api/v1/route", response_model=RouteResponse)
 def route_message(payload: RouteRequest) -> RouteResponse:
-    """Accept a ticket and forward it by email. No LLM yet — department comes from the request."""
-    send_email(
-        department=payload.department,
-        reply_to=str(payload.email),
-        subject=f"Ticket for {payload.department.value}",
-        body=payload.message,
-    )
+    """Accept a ticket. Ollama picks the department by calling send_email."""
+    try:
+        department = route_ticket(message=payload.message, reply_to=str(payload.email))
+    except ModelDidNotCallTool as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     return RouteResponse(
         status="sent",
-        department=payload.department,
-        to=DEPARTMENT_EMAIL[payload.department],
+        department=department,
+        to=DEPARTMENT_EMAIL[department],
     )
