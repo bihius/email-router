@@ -9,7 +9,7 @@ def ask_ollama(prompt: str) -> str:
     No tools, no agent loop — just HTTP to /api/chat.
     """
     base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-    model = os.environ.get("OLLAMA_MODEL", "llama3.2:1b")
+    model = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
     response = httpx.post(
         f"{base_url}/api/chat",
         json={

@@ -5,6 +5,7 @@ Python based email router with local LLM (agent + tool calling). LLM wiring come
 ## Run
 
 ```bash
+cp .env.example .env   # once; edit OLLAMA_MODEL if you want
 docker compose up -d --build
 ```
 
@@ -14,7 +15,7 @@ docker compose up -d --build
 | MailHog UI | <http://localhost:8025> |
 | Ollama | <http://localhost:11434> |
 
-Default model: `llama3.2:1b` (pulled by the `ollama-pull` one-shot service on first `compose up`).
+Default model is set in `.env` (`OLLAMA_MODEL`, default `qwen2.5:7b`). The `ollama-pull` service downloads it on first `compose up`.
 
 ## Example request
 

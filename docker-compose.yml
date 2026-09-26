@@ -12,7 +12,7 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
-  # One-shot: download the default model after Ollama is up. First run can take a while.
+  # One-shot: download the model from .env after Ollama is up. First run can take a while.
   ollama-pull:
     image: ollama/ollama
     depends_on:
@@ -20,19 +20,19 @@ services:
     environment:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["/bin/sh", "-c"]
-    command: "ollama pull llama3.2:1b"
+    command: "ollama pull ${OLLAMA_MODEL}"
     restart: "no"
 
   api:
     build: .
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
+      # Inside the Compose network, talk to sibling services by name.
       SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
-      MAIL_FROM: router@example.com
       OLLAMA_BASE_URL: http://ollama:11434
-      OLLAMA_MODEL: llama3.2:1b
     depends_on:
       - mailhog
       - ollama
