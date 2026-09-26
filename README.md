@@ -19,6 +19,8 @@ Default model is `OLLAMA_MODEL` in `.env` (`qwen2.5:7b`). `OLLAMA_TIMEOUT` is ho
 
 Departments live in `data/departments.csv` (`name`, `email`, `description`). The model sees the name and the description. Python sends to the email in that row.
 
+`LOG_LEVEL` in `.env` controls the API (`warning` by default, so `docker compose logs api` skips each request). Set it to `info` or `debug` to see those lines again. `OLLAMA_DEBUG=1` turns Ollama's extra trace on.
+
 ## Example request
 
 The model chooses the department by calling `send_email`. The request has no department field.
