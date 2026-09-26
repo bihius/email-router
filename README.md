@@ -15,7 +15,7 @@ docker compose up -d --build
 | MailHog UI | <http://localhost:8025> |
 | Ollama | <http://localhost:11434> |
 
-Default model is set in `.env` (`OLLAMA_MODEL`, default `qwen2.5:7b`). The `ollama-pull` one-shot runs `ollama pull` once the server is healthy.
+Default model is `OLLAMA_MODEL` in `.env` (`qwen2.5:3b`). `OLLAMA_TIMEOUT` is how many seconds one Ollama reply may take. The `ollama-pull` one-shot runs `ollama pull` once the server is healthy.
 
 ## Example request
 

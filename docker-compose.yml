@@ -27,7 +27,7 @@ services:
     environment:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["ollama"]
-    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:7b}"]
+    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:3b}"]
     tty: false
     stdin_open: false
     restart: "no"

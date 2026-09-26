@@ -44,6 +44,7 @@ class RouteTicketTest(unittest.TestCase):
         self.assertEqual(kwargs["department"], Department.IT)
         tools = post.call_args.kwargs["json"]["tools"]
         self.assertEqual(tools[0]["function"]["name"], "send_email")
+        self.assertEqual(post.call_args.kwargs["timeout"], 180.0)
 
     @patch("app.router.send_email")
     @patch("app.router.httpx.post")

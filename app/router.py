@@ -1,10 +1,10 @@
 import json
-import os
 from typing import Any
 
 import httpx
 
 from app.departments import Department
+from app.llm import ollama_base_url, ollama_model, ollama_timeout
 from app.mailer import send_email
 
 SYSTEM_PROMPT = """You route one internal ticket by calling send_email exactly once.
@@ -51,12 +51,10 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
 
     Reply-To is not a model argument. It always comes from the HTTP request.
     """
-    base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-    model = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
     response = httpx.post(
-        f"{base_url}/api/chat",
+        f"{ollama_base_url()}/api/chat",
         json={
-            "model": model,
+            "model": ollama_model(),
             "stream": False,
             "tools": [send_email_tool()],
             "messages": [
@@ -64,7 +62,7 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
                 {"role": "user", "content": message},
             ],
         },
-        timeout=180.0,
+        timeout=ollama_timeout(),
     )
     response.raise_for_status()
     department = _department_from_tool_call(response.json())
