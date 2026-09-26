@@ -30,11 +30,19 @@ services:
     entrypoint: ["ollama"]
     command: ["pull", "${OLLAMA_MODEL:-qwen2.5:7b}"]
 
+  # Optional decision engine. Started only with the "laya" profile (ROUTER_ENGINE=laya).
+  laya:
+    build: ./laya-serve
+    profiles: ["laya"]
+    volumes:
+      - laya_models:/models
+
   api:
     build: .
     ports:
       - "8000:8000"
     environment:
+      ROUTER_ENGINE: ${ROUTER_ENGINE:-ollama}
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       MAIL_FROM: ${MAIL_FROM:-router@example.com}
@@ -42,12 +50,18 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-180}
       OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-2048}
+      LAYA_URL: http://laya:8000
       LOG_LEVEL: ${LOG_LEVEL:-warning}
     depends_on:
       mailhog:
         condition: service_started
       ollama-pull:
         condition: service_completed_successfully
+      # Waits for Laya's checkpoint to load when the profile is on; ignored otherwise.
+      laya:
+        condition: service_healthy
+        required: false
 
 volumes:
   ollama_data:
+  laya_models:

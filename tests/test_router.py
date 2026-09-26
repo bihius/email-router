@@ -1,10 +1,13 @@
+import os
 import unittest
 from unittest.mock import patch
 
+import httpx
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import AIMessage
 
-from app.departments import get_department
+from app.config import router_engine
+from app.departments import DEPARTMENTS, get_department
 from app.router import ModelDidNotCallTool, route_ticket
 
 
@@ -38,7 +41,7 @@ def run(message: str, *replies: AIMessage):
         patch("app.router.ChatOllama", return_value=model),
         patch("app.mailer.send_email") as send_email,
     ):
-        department = route_ticket(message=message, reply_to="jan.nowak@example.com")
+        department = route_ticket(message=message, reply_to="jan.nowak@example.com").department
     return department, model, send_email
 
 
@@ -84,6 +87,13 @@ class RouteTicketTest(unittest.TestCase):
 
         send_email.assert_called_once()
 
+    def test_model_that_keeps_calling_the_tool_still_succeeds(self) -> None:
+        calls = [tool_call("other", f"call-{index}") for index in range(10)]
+        department, _, send_email = run("Czy w piątek jest firmowa impreza?", *calls)
+
+        self.assertEqual(department.name, "other")
+        send_email.assert_called_once()
+
     def test_model_sees_cleaned_text_but_mail_keeps_original(self) -> None:
         blob = "B" * 220
         original = f"Urlop na jutro\n{blob}\n-- \nJan Nowak"
@@ -94,6 +104,56 @@ class RouteTicketTest(unittest.TestCase):
         self.assertNotIn(blob, user_text)
         self.assertNotIn("Jan Nowak", user_text)
         self.assertEqual(send_email.call_args.kwargs["body"], original)
+
+
+def laya_answer(choice: str, probability: float):
+    def post(url, *, json, timeout):
+        answer = {"choice": choice, "probabilities": {choice: probability}, "confidence": 0.1}
+        body = {"answers": {"department": answer}}
+        return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+
+    return post
+
+
+class LayaRouteTest(unittest.TestCase):
+    @patch("app.mailer.send_email")
+    def test_laya_choice_is_mailed_with_reply_to_and_original_body(self, send_email) -> None:
+        original = "Nie działa mi komputer\n-- \nJan Nowak"
+        with patch("app.laya.httpx.post", side_effect=laya_answer("it", 0.91)) as post:
+            routing = route_ticket(message=original, reply_to="jan.nowak@example.com", engine="laya")
+
+        self.assertEqual((routing.engine, routing.department.name, routing.probability), ("laya", "it", 0.91))
+        kwargs = send_email.call_args.kwargs
+        self.assertEqual(kwargs["department"].email, "it@example.com")
+        self.assertEqual(kwargs["reply_to"], "jan.nowak@example.com")
+        self.assertEqual(kwargs["body"], original)
+        # Laya reads the cleaned text and may only answer with catalog names.
+        request = post.call_args.kwargs["json"]
+        self.assertEqual(request["state"], {"body": "Nie działa mi komputer"})
+        options = request["questions"]["department"]["criteria"]
+        self.assertEqual(set(options), {item.name for item in DEPARTMENTS})
+
+    @patch("app.mailer.send_email")
+    def test_laya_error_sends_nothing(self, send_email) -> None:
+        def unavailable(url, *, json, timeout):
+            return httpx.Response(503, request=httpx.Request("POST", url))
+
+        with (
+            patch("app.laya.httpx.post", side_effect=unavailable),
+            self.assertRaises(httpx.HTTPStatusError),
+        ):
+            route_ticket(message="Nie działa mi komputer", reply_to="a@example.com", engine="laya")
+        send_email.assert_not_called()
+
+
+class EngineSwitchTest(unittest.TestCase):
+    def test_defaults_to_ollama(self) -> None:
+        with patch.dict(os.environ, clear=True):
+            self.assertEqual(router_engine(), "ollama")
+
+    def test_rejects_unknown_engine(self) -> None:
+        with patch.dict(os.environ, {"ROUTER_ENGINE": "gpt"}), self.assertRaises(ValueError):
+            router_engine()
 
 
 if __name__ == "__main__":

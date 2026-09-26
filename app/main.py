@@ -1,7 +1,11 @@
 from fastapi import FastAPI, HTTPException
 
+from app.config import router_engine
 from app.router import ModelDidNotCallTool, route_ticket
 from app.schemas import RouteRequest, RouteResponse
+
+# Read once at import, so a typo in ROUTER_ENGINE stops the API at startup.
+ENGINE = router_engine()
 
 app = FastAPI(
     title="E-mail Router",
@@ -34,23 +38,31 @@ app = FastAPI(
             },
         },
         502: {
-            "description": "Ollama answered with text and did not call send_email, so no mail was sent.",
+            "description": "Ollama engine only: the model never made a valid send_email call, so no mail was sent.",
             "content": {
                 "application/json": {
-                    "example": {"detail": "model returned no send_email tool call"}
+                    "example": {"detail": "model returned no valid send_email tool call"}
                 }
             },
         },
     },
 )
 def route_message(payload: RouteRequest) -> RouteResponse:
-    """Accept a ticket. Ollama picks the department by calling send_email."""
+    """Accept a ticket and forward it to the department chosen by the configured engine.
+
+    With `ROUTER_ENGINE=ollama` (default) an agent picks the department by calling
+    send_email. With `ROUTER_ENGINE=laya` Laya answers a typed choice question.
+    """
     try:
-        department = route_ticket(message=payload.message, reply_to=str(payload.email))
+        routing = route_ticket(
+            message=payload.message, reply_to=str(payload.email), engine=ENGINE
+        )
     except ModelDidNotCallTool as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return RouteResponse(
         status="sent",
-        department=department.name,
-        to=department.email,
+        department=routing.department.name,
+        to=routing.department.email,
+        engine=routing.engine,
+        probability=routing.probability,
     )

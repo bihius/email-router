@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.departments import get_department
 from app.main import app
-from app.router import ModelDidNotCallTool
+from app.router import ModelDidNotCallTool, Routing
 
 
 class RouteEndpointTest(unittest.TestCase):
@@ -25,8 +25,11 @@ class RouteEndpointTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 502)
 
-    @patch("app.main.route_ticket", return_value=get_department("it"))
-    def test_route_uses_model_choice(self, route_ticket) -> None:
+    @patch(
+        "app.main.route_ticket",
+        return_value=Routing("laya", get_department("it"), 0.91),
+    )
+    def test_route_returns_engine_choice(self, route_ticket) -> None:
         response = self.client.post(
             "/api/v1/route",
             json={
@@ -36,12 +39,19 @@ class RouteEndpointTest(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["department"], "it")
-        self.assertEqual(response.json()["to"], "it@example.com")
-        route_ticket.assert_called_once_with(
-            message="Nie działa mi komputer",
-            reply_to="jan.nowak@example.com",
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "sent",
+                "department": "it",
+                "to": "it@example.com",
+                "engine": "laya",
+                "probability": 0.91,
+            },
         )
+        kwargs = route_ticket.call_args.kwargs
+        self.assertEqual(kwargs["message"], "Nie działa mi komputer")
+        self.assertEqual(kwargs["reply_to"], "jan.nowak@example.com")
 
 
 if __name__ == "__main__":

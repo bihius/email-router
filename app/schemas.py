@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.config import Engine
+
 
 class RouteRequest(BaseModel):
     model_config = ConfigDict(
@@ -34,13 +36,15 @@ class RouteResponse(BaseModel):
                     "status": "sent",
                     "department": "it",
                     "to": "it@example.com",
+                    "engine": "ollama",
+                    "probability": None,
                 }
             ]
         }
     )
 
     status: Literal["sent"] = Field(
-        description="sent means the tool call ran and MailHog accepted the message.",
+        description="sent means a department was chosen and MailHog accepted the message.",
         examples=["sent"],
     )
     department: str = Field(
@@ -50,4 +54,12 @@ class RouteResponse(BaseModel):
     to: str = Field(
         description="Inbox that received the ticket.",
         examples=["it@example.com"],
+    )
+    engine: Engine = Field(
+        description="Model that chose the department, set by ROUTER_ENGINE.",
+        examples=["ollama"],
+    )
+    probability: float | None = Field(
+        description="Probability Laya gave the chosen department (uncalibrated). Null for Ollama, which reports none.",
+        examples=[None, 0.93],
     )

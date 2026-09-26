@@ -1,6 +1,6 @@
 name,email,description
-kadry,kadry@example.com,"Employment admin for one person: leave, sick leave, contract, pay, working time. Example: vacation tomorrow."
-human_resources,human-resources@example.com,"People processes that are not employment admin: hiring, onboarding, review, conflict, development."
-it,it@example.com,"Something is broken or access is missing. Example: the computer does not work, or the person cannot log in."
-help_desk,help-desk@example.com,"A service request with no outage: how to do something, an equipment request, a procedure question."
-other,other@example.com,"None of the descriptions above match."
+kadry,kadry@example.com,"leave, vacation, day off, sick leave, contract, salary, payroll, working hours (urlop, L4, umowa, wypłata)"
+human_resources,human-resources@example.com,"hiring, recruitment, onboarding, performance review, conflict, training, career (rekrutacja, ocena, konflikt, rozwój)"
+it,it@example.com,"broken computer, hardware failure, outage, login, password, VPN, access (awaria, nie działa, hasło, logowanie)"
+help_desk,help-desk@example.com,"how-to questions, equipment orders, procedures, instructions (jak, zamówienie sprzętu, instrukcja)"
+other,other@example.com,everything else
