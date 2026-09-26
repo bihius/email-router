@@ -11,33 +11,31 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
 
-  # One-shot model download via Ollama HTTP API (no TTY / interactive CLI).
+  # One-shot: official `ollama pull`, after the server answers.
   ollama-pull:
-    image: curlimages/curl:8.11.1
+    image: ollama/ollama
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     environment:
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        set -e
-        echo "Waiting for Ollama..."
-        until curl -sf http://ollama:11434/api/tags >/dev/null; do sleep 2; done
-        echo "Pulling $$OLLAMA_MODEL..."
-        curl -sS http://ollama:11434/api/pull \
-          -H 'Content-Type: application/json' \
-          -d "{\"name\":\"$$OLLAMA_MODEL\"}"
-        echo
-        echo "Pull finished."
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama"]
+    command: ["pull", "${OLLAMA_MODEL:-qwen2.5:7b}"]
+    tty: false
+    stdin_open: false
     restart: "no"
 
   api:
     build: .
     ports:
-      # Host 8001 — 8000 is often taken by other local stacks.
-      - "8001:8000"
+      - "8000:8000"
     env_file:
       - .env
     environment:
