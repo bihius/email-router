@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 
-from app.departments import DEPARTMENT_EMAIL, Department
+from app.departments import Department
 
 
 def build_message(
@@ -18,7 +18,7 @@ def build_message(
     """
     message = EmailMessage()
     message["From"] = os.environ.get("MAIL_FROM", "router@example.com")
-    message["To"] = DEPARTMENT_EMAIL[department]
+    message["To"] = department.email
     message["Reply-To"] = reply_to
     message["Subject"] = subject
     message.set_content(body)

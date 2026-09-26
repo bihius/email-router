@@ -2,8 +2,6 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.departments import Department
-
 
 class RouteRequest(BaseModel):
     model_config = ConfigDict(
@@ -45,8 +43,8 @@ class RouteResponse(BaseModel):
         description="sent means the tool call ran and MailHog accepted the message.",
         examples=["sent"],
     )
-    department: Department = Field(
-        description="Department the model selected.",
+    department: str = Field(
+        description="Department name the model selected. Allowed names come from data/departments.csv.",
         examples=["it"],
     )
     to: str = Field(

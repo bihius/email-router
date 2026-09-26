@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY data ./data
 
 ENV SMTP_HOST=mailhog
 ENV SMTP_PORT=1025

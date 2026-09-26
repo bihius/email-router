@@ -17,6 +17,8 @@ docker compose up -d --build
 
 Default model is `OLLAMA_MODEL` in `.env` (`qwen2.5:7b`). `OLLAMA_TIMEOUT` is how many seconds one Ollama reply may take. `OLLAMA_NUM_CTX` is the context size reserved when the model loads (default 2048). The `ollama-pull` one-shot downloads that model once Ollama is healthy.
 
+Departments live in `data/departments.csv` (`name`, `email`, `description`). The model sees the name and the description. Python sends to the email in that row.
+
 ## Example request
 
 The model chooses the department by calling `send_email`. The request has no department field.

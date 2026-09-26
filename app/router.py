@@ -3,22 +3,22 @@ from typing import Any
 
 import httpx
 
-from app.departments import Department
+from app.departments import DEPARTMENTS, Department, get_department
 from app.llm import ollama_base_url, ollama_model, ollama_num_ctx, ollama_timeout
 from app.mailer import send_email
 
-SYSTEM_PROMPT = """You route one internal ticket by calling send_email exactly once.
-Do not answer with prose.
-
-department:
-- kadry: employment admin for one person (leave, sick leave, contract, pay, working time). Example: vacation tomorrow.
-- human_resources: people processes that are not that admin (hiring, onboarding, review, conflict, development).
-- it: something is broken or access is missing. Example: computer does not work, cannot log in.
-- help_desk: a service request with no outage (how-to, equipment request, procedure question).
-- other: none of the above.
-
-If two match, prefer the narrower one: an outage beats help_desk; employment admin beats human_resources.
-"""
+def system_prompt() -> str:
+    """Fixed routing rule, plus one line per row in the catalog."""
+    lines = [
+        "You route one internal ticket by calling send_email exactly once.",
+        "Do not answer with prose.",
+        "",
+        "department:",
+    ]
+    lines.extend(f"- {item.name}: {item.description}" for item in DEPARTMENTS)
+    lines.append("")
+    lines.append("If two descriptions match, prefer the narrower one.")
+    return "\n".join(lines)
 
 
 class ModelDidNotCallTool(Exception):
@@ -37,7 +37,7 @@ def send_email_tool() -> dict[str, Any]:
                 "properties": {
                     "department": {
                         "type": "string",
-                        "enum": [item.value for item in Department],
+                        "enum": [item.name for item in DEPARTMENTS],
                     }
                 },
                 "required": ["department"],
@@ -59,7 +59,7 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
             "tools": [send_email_tool()],
             "options": {"num_ctx": ollama_num_ctx()},
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt()},
                 {"role": "user", "content": message},
             ],
         },
@@ -70,7 +70,7 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
     send_email(
         department=department,
         reply_to=reply_to,
-        subject=f"Ticket for {department.value}",
+        subject=f"Ticket for {department.name}",
         body=message,
     )
     return department
@@ -85,9 +85,6 @@ def _department_from_tool_call(payload: dict[str, Any]) -> Department:
         arguments = function.get("arguments") or {}
         if isinstance(arguments, str):
             arguments = json.loads(arguments)
-        raw = arguments.get("department", Department.OTHER.value)
-        try:
-            return Department(raw)
-        except ValueError:
-            return Department.OTHER
+        raw = arguments.get("department", "other")
+        return get_department(str(raw))
     raise ModelDidNotCallTool("model returned no send_email tool call")

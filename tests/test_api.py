@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app.departments import Department
+from app.departments import get_department
 from app.main import app
 
 
@@ -23,7 +23,7 @@ class RouteEndpointTest(unittest.TestCase):
         self.assertEqual(example["email"], "jan.nowak@example.com")
         response_schema = schema["components"]["schemas"]["RouteResponse"]
         self.assertEqual(response_schema["examples"][0]["status"], "sent")
-        self.assertIn("Department", schema["components"]["schemas"])
+        self.assertNotIn("Department", schema["components"]["schemas"])
         self.assertNotIn("HTTPValidationError", schema["components"]["schemas"])
         invalid = schema["paths"]["/api/v1/route"]["post"]["responses"]["422"]
         self.assertEqual(
@@ -31,7 +31,7 @@ class RouteEndpointTest(unittest.TestCase):
             ["body", "email"],
         )
 
-    @patch("app.main.route_ticket", return_value=Department.IT)
+    @patch("app.main.route_ticket", return_value=get_department("it"))
     def test_route_uses_model_choice(self, route_ticket) -> None:
         response = self.client.post(
             "/api/v1/route",

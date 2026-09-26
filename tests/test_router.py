@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.departments import Department
+from app.departments import get_department
 from app.router import ModelDidNotCallTool, route_ticket
 
 
@@ -36,14 +36,15 @@ class RouteTicketTest(unittest.TestCase):
             reply_to="jan.nowak@example.com",
         )
 
-        self.assertEqual(department, Department.IT)
+        self.assertEqual(department, get_department("it"))
         send_email.assert_called_once()
         kwargs = send_email.call_args.kwargs
         self.assertEqual(kwargs["reply_to"], "jan.nowak@example.com")
         self.assertEqual(kwargs["body"], "Nie działa mi komputer")
-        self.assertEqual(kwargs["department"], Department.IT)
-        tools = post.call_args.kwargs["json"]["tools"]
-        self.assertEqual(tools[0]["function"]["name"], "send_email")
+        self.assertEqual(kwargs["department"].name, "it")
+        payload = post.call_args.kwargs["json"]
+        self.assertEqual(payload["tools"][0]["function"]["name"], "send_email")
+        self.assertIn("cannot log in", payload["messages"][0]["content"])
         self.assertEqual(post.call_args.kwargs["timeout"], 180.0)
         self.assertEqual(post.call_args.kwargs["json"]["options"]["num_ctx"], 2048)
 

@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException
 
-from app.departments import DEPARTMENT_EMAIL
 from app.router import ModelDidNotCallTool, route_ticket
 from app.schemas import RouteRequest, RouteResponse
 
@@ -52,6 +51,6 @@ def route_message(payload: RouteRequest) -> RouteResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return RouteResponse(
         status="sent",
-        department=department,
-        to=DEPARTMENT_EMAIL[department],
+        department=department.name,
+        to=department.email,
     )
