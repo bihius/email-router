@@ -11,18 +11,20 @@ docker compose up -d --build
 
 | Service | URL |
 | --- | --- |
-| API docs | <http://localhost:8000/api/v1/docs> |
+| API docs | <http://localhost:8001/api/v1/docs> |
 | MailHog UI | <http://localhost:8025> |
 | Ollama | <http://localhost:11434> |
 
 Default model is set in `.env` (`OLLAMA_MODEL`, default `qwen2.5:7b`). The `ollama-pull` service downloads it on first `compose up`.
+
+API is published on host port **8001** (container still listens on 8000) so it does not collide with other apps on 8000.
 
 ## Example request
 
 Department is temporary in the JSON until the agent chooses it:
 
 ```bash
-curl -sS -X POST http://localhost:8000/api/v1/route \
+curl -sS -X POST http://localhost:8001/api/v1/route \
   -H 'Content-Type: application/json' \
   -d '{
     "email": "jan.nowak@example.com",
