@@ -1,7 +1,5 @@
 import os
 
-import httpx
-
 
 def ollama_base_url() -> str:
     return os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
@@ -12,29 +10,10 @@ def ollama_model() -> str:
 
 
 def ollama_timeout() -> float:
-    """Seconds to wait for one Ollama HTTP response. Set OLLAMA_TIMEOUT in .env."""
+    """Seconds to wait for one Ollama HTTP response."""
     return float(os.environ.get("OLLAMA_TIMEOUT", "180"))
 
 
 def ollama_num_ctx() -> int:
-    """Context tokens allocated when the model loads. Set OLLAMA_NUM_CTX in .env."""
+    """Context tokens allocated when the model loads."""
     return int(os.environ.get("OLLAMA_NUM_CTX", "2048"))
-
-
-def ask_ollama(prompt: str) -> str:
-    """Send one plain chat message to Ollama and return the assistant text.
-
-    No tools, no agent loop — just HTTP to /api/chat.
-    """
-    response = httpx.post(
-        f"{ollama_base_url()}/api/chat",
-        json={
-            "model": ollama_model(),
-            "stream": False,
-            "options": {"num_ctx": ollama_num_ctx()},
-            "messages": [{"role": "user", "content": prompt}],
-        },
-        timeout=ollama_timeout(),
-    )
-    response.raise_for_status()
-    return response.json()["message"]["content"]

@@ -1,44 +1,22 @@
 # email-router
 
-Python based email router with a local LLM. A LangChain agent calls `send_email`; the department catalog is `data/departments.csv`.
+PoC of an AI message router. A FastAPI service passes the incoming message to a LangChain agent backed by a local Ollama model. The agent picks a department and calls the `send_email` tool, and MailHog captures the message.
 
 ## Run
 
 ```bash
-docker compose up -d --build
+cp .env.example .env   # optional: only to override defaults
+docker compose up -d
 ```
 
-No `.env` file is required. Defaults are model `qwen2.5:7b`, timeout 180 seconds, context 2048 tokens, and `LOG_LEVEL=warning`. Copy `.env.example` to `.env` only when you want to override them.
-
-The API container starts after `ollama-pull` has finished, so the model is downloaded before the first request.
+On first start, `ollama-pull` downloads the model (`qwen2.5:7b`, about 4.7 GB). The API waits for the download to finish, so it is ready as soon as its container is up. On CPU, the first request also loads the model into memory and can take a while.
 
 | Service | URL |
 | --- | --- |
-| API docs | <http://localhost:8000/api/v1/docs> |
+| API docs (Swagger) | <http://localhost:8000/api/v1/docs> |
 | MailHog UI | <http://localhost:8025> |
-| Ollama | <http://localhost:11434> |
-
-`LOG_LEVEL=warning` hides the one-line access log. Set it to `info` or `debug` to see those lines. `OLLAMA_DEBUG=1` turns Ollama's extra trace on.
-
-## Departments
-
-`data/departments.csv` has three columns: `name`, `email`, `description`. The system prompt is built from the name and the description. The model never sees the address. `send_email` uses the email from that row, and `Reply-To` is the sender from the request. Add a department by adding a row. The file must include a row named `other`.
-
-Long base64 (a footer image) and a `--` signature are removed from the text sent to the model. The mail body stays the original message. Context 2048 is for the words, not for the image.
-
-## Architecture decisions
-
-- One tool, `send_email`. The department is an argument, and the allowed names come from the CSV catalog. There is not a separate tool for each department.
-- Departments live in `data/departments.csv` (`name`, `email`, `description`). They are not environment variables, and they are not hardcoded in the prompt. The prompt is built from each row's name and description. The model does not see the address.
-- A LangChain agent (`ChatOllama` and `create_agent`) calls that tool. The application does not parse a department name out of free-text prose. If the model answers with prose and never calls the tool, nothing is sent.
-- Compose uses the official MailHog image. The API sends the message to it over SMTP. `Reply-To` is the requester address. `To` is the department address.
-- Ollama uses `qwen2.5:7b` by default, with `num_ctx` 2048. The timeout comes from the environment. The `ollama-pull` one-shot must finish before the API starts.
-- `docker compose up -d --build` works with those defaults. No hand-made `.env` file is required.
-- Text sent to the model drops data-URI and long base64 blobs, then drops a signature that starts on a line of `--`. The email that is sent keeps the original message.
 
 ## Example request
-
-The model chooses the department by calling `send_email`. The request has no department field.
 
 ```bash
 curl -sS -X POST http://localhost:8000/api/v1/route \
@@ -49,4 +27,27 @@ curl -sS -X POST http://localhost:8000/api/v1/route \
   }'
 ```
 
-Then open MailHog and check `To: it@example.com` and `Reply-To: jan.nowak@example.com`.
+```json
+{"status": "sent", "department": "it", "to": "it@example.com"}
+```
+
+In MailHog, the message has `To: it@example.com` and `Reply-To: jan.nowak@example.com`. If the model answers with plain text instead of calling the tool, no mail is sent and the API returns `502`.
+
+## Architecture decisions
+
+- **One tool with a constrained argument.** The agent has a single `send_email(department)` tool. The argument schema is a `Literal` of the department names from the catalog. If the model picks a name that is not in the catalog, validation rejects it and the agent gives the model the error so it can retry. The agent loop is capped, and each request sends at most one mail.
+- **Routing only through the tool call.** The app never parses a department out of free-form model output. No tool call means no mail.
+- **The model chooses, the code addresses the mail.** The tool closes over the original message and the sender, so the model sees department names and descriptions but never the addresses. The mail's `To` comes from the catalog, `Reply-To` is the sender from the request, and the body is the original message.
+- **Department catalog in `data/departments.csv`** (`name`, `email`, `description`). The system prompt is built from this file, so adding a department means adding one row. The file must include an `other` row as the fallback.
+- **Cleaned text goes to the model, the original goes in the mail.** Before the message reaches the model, data URIs and long base64 runs (such as inline images in an email footer) are replaced with `[attachment omitted]`, and everything after a signature delimiter line (`-- ` or `--`) is dropped. One embedded image can be larger than the 2048-token context, and signatures add words that only confuse routing. The forwarded mail keeps the full original message.
+- **Ready after `docker compose up -d`.** A one-shot `ollama-pull` container downloads the weights, and the API starts only after it finishes successfully. Ollama and SMTP are reachable only inside the Compose network. Only the API and the MailHog UI are published.
+- **Model `qwen2.5:7b`, temperature 0, context 2048.** It supports tool calling in Ollama and runs acceptably on CPU. Model, timeout, context size and log level can be changed in `.env` (see `.env.example`).
+
+## Tests
+
+```bash
+pip install -r requirements.txt
+python -m unittest discover -s tests
+```
+
+The tests replace Ollama with a scripted chat model and replace SMTP with a mock, so they need no running containers.

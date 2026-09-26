@@ -1,5 +1,4 @@
 import csv
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,16 +12,11 @@ class Department:
     description: str
 
 
-def catalog_path() -> Path:
-    override = os.environ.get("DEPARTMENTS_FILE")
-    if override:
-        return Path(override)
-    return Path(__file__).resolve().parents[1] / "data" / "departments.csv"
+CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "departments.csv"
 
 
-def load_departments(path: Path | None = None) -> tuple[Department, ...]:
-    file_path = path or catalog_path()
-    with file_path.open(newline="", encoding="utf-8") as handle:
+def load_departments(path: Path = CATALOG_PATH) -> tuple[Department, ...]:
+    with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames != ["name", "email", "description"]:
             raise ValueError("departments.csv must have columns name, email, description")

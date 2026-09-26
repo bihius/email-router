@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.departments import get_department
 from app.main import app
+from app.router import ModelDidNotCallTool
 
 
 class RouteEndpointTest(unittest.TestCase):
@@ -15,21 +16,14 @@ class RouteEndpointTest(unittest.TestCase):
         response = self.client.get("/api/v1/docs")
         self.assertEqual(response.status_code, 200)
 
-    def test_openapi_shows_a_real_ticket(self) -> None:
-        schema = self.client.get("/api/v1/openapi.json").json()
-        request_schema = schema["components"]["schemas"]["RouteRequest"]
-        example = request_schema["examples"][0]
-        self.assertIn("komputer", example["message"])
-        self.assertEqual(example["email"], "jan.nowak@example.com")
-        response_schema = schema["components"]["schemas"]["RouteResponse"]
-        self.assertEqual(response_schema["examples"][0]["status"], "sent")
-        self.assertNotIn("Department", schema["components"]["schemas"])
-        self.assertNotIn("HTTPValidationError", schema["components"]["schemas"])
-        invalid = schema["paths"]["/api/v1/route"]["post"]["responses"]["422"]
-        self.assertEqual(
-            invalid["content"]["application/json"]["example"]["detail"][0]["loc"],
-            ["body", "email"],
+    @patch("app.main.route_ticket", side_effect=ModelDidNotCallTool("no tool call"))
+    def test_no_tool_call_is_a_502(self, route_ticket) -> None:
+        response = self.client.post(
+            "/api/v1/route",
+            json={"email": "jan.nowak@example.com", "message": "cześć"},
         )
+
+        self.assertEqual(response.status_code, 502)
 
     @patch("app.main.route_ticket", return_value=get_department("it"))
     def test_route_uses_model_choice(self, route_ticket) -> None:

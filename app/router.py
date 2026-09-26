@@ -3,12 +3,18 @@ from typing import Literal
 from langchain.agents import create_agent
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
-from pydantic import Field, create_model
+from pydantic import BaseModel, Field
 
 from app import mailer
 from app.departments import DEPARTMENTS, Department, get_department
 from app.llm import ollama_base_url, ollama_model, ollama_num_ctx, ollama_timeout
 from app.text import text_for_model
+
+DepartmentName = Literal[tuple(item.name for item in DEPARTMENTS)]
+
+
+class SendEmailArgs(BaseModel):
+    department: DepartmentName = Field(description="Catalog department name.")
 
 
 class ModelDidNotCallTool(Exception):
@@ -21,7 +27,7 @@ def system_prompt() -> str:
         "You route one internal ticket by calling send_email exactly once.",
         "Do not answer with prose.",
         "",
-        "department:",
+        "Departments:",
     ]
     lines.extend(f"- {item.name}: {item.description}" for item in DEPARTMENTS)
     lines.append("")
@@ -29,36 +35,22 @@ def system_prompt() -> str:
     return "\n".join(lines)
 
 
-def invoke_agent(agent, send_email_tool, user_text: str) -> None:
-    """Run one agent turn.
-
-    The tool argument is the same function handed to the agent. This call does
-    not use it. Tests call that function themselves, without a live model.
-    """
-    agent.invoke(
-        {"messages": [{"role": "user", "content": user_text}]},
-        config={"recursion_limit": 6},
-    )
-
-
 def route_ticket(*, message: str, reply_to: str) -> Department:
     """Ask a LangChain agent to call send_email, then return the department it chose.
 
-    Reply-To and the original body are closed over by the tool. The model only
-    picks a department name. Base64 and a "--" signature footer are stripped
-    from the text the model sees.
+    Reply-To and the original body are closed over by the tool, so the model
+    only picks a department name. The model sees a cleaned copy of the message
+    (see app.text); the mail carries the original.
     """
     sent: list[Department] = []
-    names = tuple(item.name for item in DEPARTMENTS)
-    department_name = Literal.__getitem__(names)
-    args_schema = create_model(
-        "SendEmailArgs",
-        department=(department_name, Field(description="Catalog department name.")),
-    )
 
-    @tool("send_email", args_schema=args_schema)
+    # An unknown department name fails schema validation; the agent returns the
+    # error to the model, which can retry within the recursion limit.
+    @tool("send_email", args_schema=SendEmailArgs)
     def send_email(department: str) -> str:
         """Forward this ticket to exactly one department."""
+        if sent:
+            return f"already sent to {sent[0].email}"
         row = get_department(department)
         mailer.send_email(
             department=row,
@@ -77,7 +69,10 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
         client_kwargs={"timeout": ollama_timeout()},
     )
     agent = create_agent(model, tools=[send_email], system_prompt=system_prompt())
-    invoke_agent(agent, send_email, text_for_model(message))
+    agent.invoke(
+        {"messages": [{"role": "user", "content": text_for_model(message)}]},
+        config={"recursion_limit": 6},
+    )
     if not sent:
         raise ModelDidNotCallTool("model returned no send_email tool call")
-    return sent[-1]
+    return sent[0]

@@ -32,10 +32,7 @@ def send_email(
     subject: str,
     body: str,
 ) -> None:
-    """Send a message to the MailHog SMTP listener.
-
-    From a laptop use localhost. From the future API container use host mailhog.
-    """
+    """Send the message over SMTP (MailHog in Docker Compose)."""
     message = build_message(
         department=department,
         reply_to=reply_to,
