@@ -1,0 +1,101 @@
+id,department,pl,en
+ka01,kadry,"Chciałbym wziąć wolne w przyszły piątek, jak to zgłosić?","I'd like to take next Friday off, how do I request it?"
+ka02,kadry,"Od jutra jestem na zwolnieniu lekarskim, lekarz wystawił mi e-ZLA.","I'm on sick leave from tomorrow, the doctor issued an electronic sick note."
+ka03,kadry,"W tym miesiącu przelew z pensją był niższy niż zwykle, czy mogę prosić o wyjaśnienie?","This month's salary transfer was lower than usual, could you explain why?"
+ka04,kadry,Kiedy kończy mi się umowa na okres próbny?,When does my probation contract end?
+ka05,kadry,Potrzebuję zaświadczenia o zatrudnieniu i zarobkach do banku.,I need a certificate of employment and earnings for the bank.
+ka06,kadry,Ile dni urlopu zostało mi do wykorzystania w tym roku?,How many vacation days do I have left this year?
+ka07,kadry,Chcę przejść na pół etatu od przyszłego kwartału.,I want to switch to part-time from next quarter.
+ka08,kadry,Nie dostałem jeszcze PIT-11 za zeszły rok.,I haven't received my annual tax statement for last year yet.
+ka09,kadry,"Proszę o zmianę numeru konta, na który wpływa moje wynagrodzenie.",Please change the bank account my pay is sent to.
+ka10,kadry,"Pracowałem w sobotę, jak mam rozliczyć nadgodziny?","I worked on Saturday, how do I get the overtime paid?"
+ka11,kadry,"Moje dziecko jest chore, chcę wziąć opiekę na dwa dni.","My child is sick, I want to take two days of carer's leave."
+ka12,kadry,"Składam wypowiedzenie, jaki mam okres wypowiedzenia?","I'm resigning, what is my notice period?"
+ka13,kadry,"Wracam z urlopu macierzyńskiego w marcu, co muszę złożyć?","I'm returning from maternity leave in March, what paperwork do I need to submit?"
+ka14,kadry,Czy mogę zacząć pracę o 7 i kończyć o 15 zamiast 9-17?,Can I work 7 to 3 instead of 9 to 5?
+ka15,kadry,"Urlop na żądanie na dzisiaj, przepraszam za późne zgłoszenie.","Taking an emergency day off today, sorry for the late notice."
+ka16,kadry,Brakuje mi dodatku za pracę zdalną na pasku wypłaty.,The remote work allowance is missing from my payslip.
+ka17,kadry,"Zmieniłam nazwisko po ślubie, proszę o aktualizację danych w aktach.","I changed my surname after getting married, please update my personnel file."
+ka18,kadry,Czy przysługuje mi dodatkowy dzień wolny za święto wypadające w sobotę?,Am I entitled to an extra day off for the public holiday that falls on a Saturday?
+ka19,kadry,Kiedy przedłużycie mi umowę? Obecna wygasa za dwa tygodnie.,When will my contract be extended? The current one expires in two weeks.
+ka20,kadry,chce zlozyc wniosek o urlop wypoczynkowy od 10 do 21 lipca,want to file a vacation request from july 10 to 21
+hu01,human_resources,"Szukamy dwóch testerów do zespołu, kto może otworzyć rekrutację?","We're looking for two testers for the team, who can open the hiring process?"
+hu02,human_resources,"Nowa osoba zaczyna w poniedziałek, jak wygląda jej pierwszy dzień?","A new person starts on Monday, what does their first day look like?"
+hu03,human_resources,Kiedy odbędzie się ocena roczna w moim dziale?,When will the annual appraisal take place in my department?
+hu04,human_resources,Mam poważny konflikt z kolegą z zespołu i potrzebuję pomocy w jego rozwiązaniu.,I have a serious conflict with a teammate and need help resolving it.
+hu05,human_resources,"Chciałbym pójść na kurs zarządzania projektami, czy firma go sfinansuje?","I'd like to attend a project management course, will the company fund it?"
+hu06,human_resources,Jakie mam możliwości awansu na stanowisko seniora?,What are my options for promotion to a senior role?
+hu07,human_resources,Chcę polecić znajomego na otwarte stanowisko programisty.,I want to refer a friend for the open developer position.
+hu08,human_resources,"Czuję, że przełożony traktuje mnie niesprawiedliwie, z kim mogę o tym porozmawiać?","I feel my manager treats me unfairly, who can I talk to about it?"
+hu09,human_resources,Proszę o plan wdrożenia dla nowego stażysty w marketingu.,Please send an onboarding plan for the new marketing intern.
+hu10,human_resources,Czy mamy program mentoringowy dla młodszych pracowników?,Do we have a mentoring program for junior employees?
+hu11,human_resources,Kandydat pyta o termin drugiego etapu rozmów kwalifikacyjnych.,A candidate is asking about the date of the second interview round.
+hu12,human_resources,Chciałbym ustalić cele rozwojowe na najbliższy rok.,I'd like to set my development goals for the coming year.
+hu13,human_resources,"W zespole panuje zła atmosfera, może warsztaty integracyjne?","The team atmosphere is bad, maybe a team-building workshop?"
+hu14,human_resources,Zgłaszam niewłaściwe zachowanie współpracownika wobec mnie na spotkaniu.,I'm reporting a coworker's inappropriate behavior towards me in a meeting.
+hu15,human_resources,Jak wygląda ścieżka przejścia z supportu do działu analiz?,What is the path for moving from support to the analytics department?
+hu16,human_resources,Potrzebujemy ogłoszenia o pracę na stanowisko księgowej.,We need a job posting for an accountant position.
+hu17,human_resources,"Czy mogę dostać feedback po rozmowie o awans, której nie przeszedłem?",Can I get feedback after the promotion interview I didn't pass?
+hu18,human_resources,"Organizujemy szkolenie z komunikacji dla liderów, kto się tym zajmuje?","We're organizing communication training for team leads, who handles that?"
+hu19,human_resources,"Nowy pracownik nie ma jeszcze przydzielonego opiekuna, proszę o pomoc.","The new hire hasn't been assigned a buddy yet, please help."
+hu20,human_resources,"Chciałabym zmienić zespół wewnątrz firmy, od czego zacząć?","I'd like to move to a different team within the company, where do I start?"
+it01,it,"Laptop nie włącza się od rana, dioda nawet nie miga.","My laptop won't turn on since this morning, the LED doesn't even blink."
+it02,it,"Nie mogę się zalogować do systemu, konto zostało zablokowane.","I can't log in to the system, my account has been locked."
+it03,it,Outlook się zawiesza przy każdym otwarciu załącznika.,Outlook freezes every time I open an attachment.
+it04,it,Internet w całym biurze na trzecim piętrze nie działa.,The internet is down on the whole third floor of the office.
+it05,it,Zapomniałem hasła do komputera i nie mogę pracować.,I forgot my computer password and can't work.
+it06,it,Nie mam dostępu do folderu działu finansów na dysku sieciowym.,I don't have access to the finance department folder on the network drive.
+it07,it,Monitor miga i co chwilę gaśnie.,My monitor flickers and keeps going black.
+it08,it,"VPN rozłącza się co pięć minut, nie da się pracować z domu.","The VPN disconnects every five minutes, I can't work from home."
+it09,it,Po aktualizacji Windowsa komputer pokazuje niebieski ekran.,After the Windows update my computer shows a blue screen.
+it10,it,System CRM zwraca błąd 500 przy zapisie klienta.,The CRM returns error 500 when saving a customer.
+it11,it,"Drukarka sieciowa zgłasza zacięcie papieru, ale go tam nie ma.",The network printer reports a paper jam but there is no paper stuck.
+it12,it,Klawiatura w laptopie przestała reagować na połowę klawiszy.,Half of the keys on my laptop keyboard stopped responding.
+it13,it,Dostałem podejrzanego maila z linkiem i chyba w niego kliknąłem.,I got a suspicious email with a link and I think I clicked it.
+it14,it,"Nie działa mi mikrofon na Teamsach, nikt mnie nie słyszy.","My microphone doesn't work in Teams, nobody can hear me."
+it15,it,Serwer plików jest niedostępny od godziny.,The file server has been unavailable for an hour.
+it16,it,Potrzebuję uprawnień administratora do bazy danych produkcyjnej.,I need admin permissions for the production database.
+it17,it,Telefon służbowy nie synchronizuje poczty od wczoraj.,My work phone hasn't synced email since yesterday.
+it18,it,"Komputer strasznie zwolnił, wszystko się ładuje minutami.","My computer has become extremely slow, everything takes minutes to load."
+it19,it,Wifi dla gości nie działa w sali konferencyjnej.,The guest wifi isn't working in the conference room.
+it20,it,"nie moge wejsc do jiry, pisze ze brak uprawnien","cant get into jira, it says no permission"
+he01,help_desk,Jak ustawić automatyczną odpowiedź w poczcie na czas urlopu?,How do I set up an automatic out-of-office reply in email?
+he02,help_desk,Chciałbym zamówić drugi monitor do stanowiska pracy.,I'd like to order a second monitor for my workstation.
+he03,help_desk,Gdzie znajdę instrukcję podłączenia do drukarki w nowym biurze?,Where can I find instructions for connecting to the printer in the new office?
+he04,help_desk,Jak zarezerwować salę konferencyjną w kalendarzu?,How do I book a conference room in the calendar?
+he05,help_desk,Potrzebuję słuchawek z mikrofonem do rozmów z klientami.,I need a headset with a microphone for customer calls.
+he06,help_desk,Jak udostępnić plik osobie spoza firmy?,How do I share a file with someone outside the company?
+he07,help_desk,Jaka jest procedura zgłoszenia zgubionej karty dostępu do budynku?,What is the procedure for reporting a lost building access card?
+he08,help_desk,"Poproszę o nowy telefon służbowy, obecny ma już pięć lat.","I'd like a new work phone, my current one is five years old."
+he09,help_desk,Jak dodać podpis do maili w Outlooku?,How do I add a signature to my emails in Outlook?
+he10,help_desk,Czy mogę dostać stację dokującą do laptopa?,Can I get a docking station for my laptop?
+he11,help_desk,Jak zainstalować program z firmowego portalu aplikacji?,How do I install a program from the company app portal?
+he12,help_desk,Gdzie jest instrukcja korzystania z nowego systemu obiegu dokumentów?,Where is the guide for using the new document workflow system?
+he13,help_desk,Jak skonfigurować pocztę firmową na prywatnym telefonie?,How do I set up company email on my personal phone?
+he14,help_desk,Potrzebuję myszki i podkładki ergonomicznej.,I need an ergonomic mouse and mouse pad.
+he15,help_desk,Jak zmienić język interfejsu w systemie raportowym?,How do I change the interface language in the reporting system?
+he16,help_desk,"Nowy pracownik potrzebuje laptopa na przyszły tydzień, jak go zamówić?","A new employee needs a laptop by next week, how do I order one?"
+he17,help_desk,Jak zeskanować dokument do PDF na drukarce wielofunkcyjnej?,How do I scan a document to PDF on the multifunction printer?
+he18,help_desk,Jaka jest procedura zwrotu sprzętu przy zmianie stanowiska?,What is the procedure for returning equipment when changing positions?
+he19,help_desk,Jak utworzyć wspólny kalendarz dla zespołu?,How do I create a shared calendar for the team?
+he20,help_desk,poprosze o kamerke internetowa do laptopa,could i get a webcam for my laptop
+ot01,other,Czy w piątek jest firmowa impreza?,Is there a company party on Friday?
+ot02,other,Kto odpowiada za zamawianie kawy do kuchni?,Who is in charge of ordering coffee for the kitchen?
+ot03,other,Na parkingu ktoś zastawił mój samochód.,Someone blocked my car in the parking lot.
+ot04,other,Znalazłem czyjś portfel w toalecie na drugim piętrze.,I found someone's wallet in the second-floor restroom.
+ot05,other,Jestem dziennikarzem i chciałbym zapytać o komentarz w sprawie waszej fuzji.,I'm a journalist and would like a comment on your merger.
+ot06,other,Proponujemy współpracę w zakresie dostaw materiałów biurowych.,We'd like to offer a partnership for office supply deliveries.
+ot07,other,W kuchni cieknie kran.,The kitchen tap is leaking.
+ot08,other,Czy firma planuje akcję charytatywną na święta?,Is the company planning a charity drive for the holidays?
+ot09,other,Klimatyzacja w open space jest ustawiona za zimno.,The air conditioning in the open space is set too cold.
+ot10,other,Chciałbym zamówić catering na spotkanie z klientem.,I'd like to order catering for a client meeting.
+ot11,other,Kiedy będzie gotowe nowe logo firmy?,When will the new company logo be ready?
+ot12,other,Czy możemy dostać więcej roślin do biura?,Can we get more plants in the office?
+ot13,other,Klient pyta o cenę waszej usługi premium.,A customer is asking about the price of your premium service.
+ot14,other,Kto organizuje wyjazd firmowy w tym roku?,Who is organizing the company trip this year?
+ot15,other,Winda w budynku B znowu stoi.,The elevator in building B is stuck again.
+ot16,other,Czy mogę przyprowadzić psa do biura?,Can I bring my dog to the office?
+ot17,other,Chcielibyśmy wynająć waszą salę na zewnętrzne wydarzenie.,We would like to rent your hall for an external event.
+ot18,other,Gdzie mogę zostawić rower na terenie firmy?,Where can I leave my bike on company premises?
+ot19,other,"Dzień dobry, piszę w sprawie faktury za wasze zamówienie u nas.","Hello, I'm writing about the invoice for your order with us."
+ot20,other,"hej, ktos wie czy stolowka jest dzis otwarta?","hey, anyone know if the canteen is open today?"

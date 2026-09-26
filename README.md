@@ -49,21 +49,21 @@ docker compose up -d
 
 `COMPOSE_PROFILES=${ROUTER_ENGINE}` in `.env` starts the `laya` container. It is built from `laya-serve/Dockerfile` (CPU PyTorch, about 1.5 GB) and downloads the `laya-multilingual` checkpoint (about 650 MB) into a volume. The API waits until the checkpoint is loaded. Ollama still starts, because the brief requires it. The response then reports `"engine": "laya"` and the probability Laya gave the chosen department.
 
-Measured on the same 14 Polish and English tickets (CPU, Apple M4, Docker, warm models, including the API and SMTP round trip):
+Measured on 100 tickets, each in Polish and in English with the same meaning ([`eval/`](eval/README.md), CPU, Apple M4, API round trip including SMTP):
 
-| Engine | Correct | Time per ticket |
-| --- | --- | --- |
-| Ollama `qwen2.5:7b` agent (default) | 14/14 | 5.5–19.6 s |
-| Laya `laya-multilingual` | 11/14 | 0.27–0.61 s |
+| Engine | PL | EN | Median time |
+| --- | --- | --- | --- |
+| Ollama `qwen2.5:7b` agent (default) | 85/100 | 84/100 | 5.4–6.4 s |
+| Laya `laya-multilingual` | 56/100 | 65/100 | 0.19 s |
 
-Laya was about 18× faster (median 0.36 s against 6.5 s) but zero-shot less accurate. It sent "cannot log in to VPN" to `kadry`, "when is payday" to `other`, and "conflict with my manager" to `kadry`. Its probabilities are uncalibrated. Its authors report the largest accuracy gains from fine-tuning on your own decisions, which is the natural next step and is outside this PoC. Ollama therefore stays the default. Fourteen tickets are a smoke check, not a benchmark.
+Laya is about 30× faster but zero-shot clearly less accurate, so Ollama stays the default. Language is not the main reason. Laya almost never picks the catch-all `other`, and both engines mix up `help_desk` and `it`. [`eval/README.md`](eval/README.md) lists what was tried (catalog wording, checkpoint choice, probability thresholds, a Laya-then-Ollama cascade). The lever left is fine-tuning Laya on labelled tickets, which is outside this PoC.
 
 ## Architecture decisions
 
 - **One tool with a constrained argument.** The agent has a single `send_email(department)` tool. The argument schema is a `Literal` of the department names from the catalog. If the model picks a name that is not in the catalog, validation rejects it and the agent gives the model the error so it can retry. The agent loop is capped, and each request sends at most one mail. If the model keeps calling the tool after the mail is sent, the call still succeeds.
 - **Routing only through a structured decision.** The app never parses a department out of free-form model output. With Ollama the decision is the tool call, and no tool call means no mail. With Laya it is a typed `choice` answer that can only be one of the catalog names. Both engines then use the same code to send the mail.
 - **The model chooses, the code addresses the mail.** The model sees department names and descriptions, never addresses. The mail's `To` comes from the catalog, `Reply-To` is the sender from the request, and the body is the original message.
-- **Department catalog in `data/departments.csv`** (`name`, `email`, `description`). Both engines read their options from this file, so adding a department means adding one row. The file must include an `other` row as the fallback. The descriptions are short keyword lists with Polish terms. Compared with prose descriptions, this raised Laya from 7/14 to 11/14 and Ollama from 12/14 to 14/14 on the tickets above.
+- **Department catalog in `data/departments.csv`** (`name`, `email`, `description`). Both engines read their options from this file, so adding a department means adding one row. The file must include an `other` row as the fallback. The descriptions are short English keyword lists. Of the three wordings compared in [`eval/`](eval/README.md), this one scored best for both engines.
 - **Cleaned text goes to the model, the original goes in the mail.** Before the message reaches either engine, data URIs and long base64 runs (such as inline images in an email footer) are replaced with `[attachment omitted]`, and everything after a signature delimiter line (`-- ` or `--`) is dropped. One embedded image can be larger than the 2048-token context, and signatures add words that only confuse routing. The forwarded mail keeps the full original message.
 - **Ready after `docker compose up -d`.** A one-shot `ollama-pull` container downloads the weights, and the API starts only after it finishes successfully (and after Laya is healthy when it is enabled). Ollama, Laya and SMTP are reachable only inside the Compose network. Only the API and the MailHog UI are published. Image tags and Python dependencies are pinned.
 - **Model `qwen2.5:7b`, temperature 0, context 2048.** It supports tool calling in Ollama and runs acceptably on CPU. Engine, model, timeout, context size and log level can be changed in `.env` (see `.env.example`).

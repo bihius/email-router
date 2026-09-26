@@ -1,6 +1,6 @@
 name,email,description
-kadry,kadry@example.com,"leave, vacation, day off, sick leave, contract, salary, payroll, working hours (urlop, L4, umowa, wypłata)"
-human_resources,human-resources@example.com,"hiring, recruitment, onboarding, performance review, conflict, training, career (rekrutacja, ocena, konflikt, rozwój)"
-it,it@example.com,"broken computer, hardware failure, outage, login, password, VPN, access (awaria, nie działa, hasło, logowanie)"
-help_desk,help-desk@example.com,"how-to questions, equipment orders, procedures, instructions (jak, zamówienie sprzętu, instrukcja)"
+kadry,kadry@example.com,"leave, vacation, day off, sick leave, contract, salary, payroll, working hours"
+human_resources,human-resources@example.com,"hiring, recruitment, onboarding, performance review, conflict, training, career"
+it,it@example.com,"broken computer, hardware failure, outage, login, password, VPN, access"
+help_desk,help-desk@example.com,"how-to questions, equipment orders, procedures, instructions"
 other,other@example.com,everything else
