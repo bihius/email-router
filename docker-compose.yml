@@ -40,15 +40,20 @@ services:
     build: .
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
-      # Inside the Compose network, talk to sibling services by name.
       SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      MAIL_FROM: ${MAIL_FROM:-router@example.com}
       OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-180}
+      OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-2048}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
     depends_on:
-      - mailhog
-      - ollama
+      mailhog:
+        condition: service_started
+      ollama-pull:
+        condition: service_completed_successfully
 
 volumes:
   ollama_data:

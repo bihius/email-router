@@ -6,6 +6,7 @@ import httpx
 from app.departments import DEPARTMENTS, Department, get_department
 from app.llm import ollama_base_url, ollama_model, ollama_num_ctx, ollama_timeout
 from app.mailer import send_email
+from app.text import text_for_model
 
 def system_prompt() -> str:
     """Fixed routing rule, plus one line per row in the catalog."""
@@ -60,7 +61,7 @@ def route_ticket(*, message: str, reply_to: str) -> Department:
             "options": {"num_ctx": ollama_num_ctx()},
             "messages": [
                 {"role": "system", "content": system_prompt()},
-                {"role": "user", "content": message},
+                {"role": "user", "content": text_for_model(message)},
             ],
         },
         timeout=ollama_timeout(),

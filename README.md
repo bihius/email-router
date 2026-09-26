@@ -5,9 +5,12 @@ Python based email router with a local LLM. The model picks a department by call
 ## Run
 
 ```bash
-cp .env.example .env   # once; edit OLLAMA_MODEL if you want
 docker compose up -d --build
 ```
+
+No `.env` file is required. Defaults are model `qwen2.5:7b`, timeout 180 seconds, context 2048 tokens, and `LOG_LEVEL=warning`. Copy `.env.example` to `.env` only when you want to override them.
+
+The API container starts after `ollama-pull` has finished, so the model is downloaded before the first request.
 
 | Service | URL |
 | --- | --- |
@@ -15,11 +18,13 @@ docker compose up -d --build
 | MailHog UI | <http://localhost:8025> |
 | Ollama | <http://localhost:11434> |
 
-Default model is `OLLAMA_MODEL` in `.env` (`qwen2.5:7b`). `OLLAMA_TIMEOUT` is how many seconds one Ollama reply may take. `OLLAMA_NUM_CTX` is the context size reserved when the model loads (default 2048). The `ollama-pull` one-shot downloads that model once Ollama is healthy.
+`LOG_LEVEL=warning` hides the one-line access log. Set it to `info` or `debug` to see those lines. `OLLAMA_DEBUG=1` turns Ollama's extra trace on.
 
-Departments live in `data/departments.csv` (`name`, `email`, `description`). The model sees the name and the description. Python sends to the email in that row.
+## Departments
 
-`LOG_LEVEL` in `.env` controls the API (`warning` by default, so `docker compose logs api` skips each request). Set it to `info` or `debug` to see those lines again. `OLLAMA_DEBUG=1` turns Ollama's extra trace on.
+`data/departments.csv` has three columns: `name`, `email`, `description`. The system prompt is built from the name and the description. The model never sees the address. `send_email` uses the email from that row, and `Reply-To` is the sender from the request. Add a department by adding a row. The file must include a row named `other`.
+
+Long base64 (a footer image) is removed from the text sent to the model. The mail body stays the original message. Context 2048 is for the words, not for the image.
 
 ## Example request
 

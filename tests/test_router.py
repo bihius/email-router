@@ -45,6 +45,7 @@ class RouteTicketTest(unittest.TestCase):
         payload = post.call_args.kwargs["json"]
         self.assertEqual(payload["tools"][0]["function"]["name"], "send_email")
         self.assertIn("cannot log in", payload["messages"][0]["content"])
+        self.assertEqual(payload["messages"][1]["content"], "Nie działa mi komputer")
         self.assertEqual(post.call_args.kwargs["timeout"], 180.0)
         self.assertEqual(post.call_args.kwargs["json"]["options"]["num_ctx"], 2048)
 
