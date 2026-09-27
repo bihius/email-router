@@ -1,5 +1,7 @@
 # email-router
 
+[Wersja polska](README.pl.md)
+
 PoC of an AI message router. A FastAPI service passes the incoming message to a LangChain agent backed by a local Ollama model. The agent picks a department and calls the `send_email` tool, and MailHog captures the message.
 
 It also contains an experiment: the same decision made by [Laya](https://huggingface.co/convaiinnovations/laya), a local System One decision model, instead of an LLM. On 100 Polish and 100 English test tickets it was about 30× faster but noticeably less accurate, so it is off by default (see [Experiment: System One engine](#experiment-system-one-engine-laya) and [`eval/`](eval/README.md)).
@@ -37,7 +39,7 @@ In MailHog, the message has `To: it@example.com` and `Reply-To: jan.nowak@exampl
 
 ## Experiment: System One engine (Laya)
 
-Routing a ticket is a classification: one choice out of five known options. An LLM does it by generating a tool call token by token. System One models, a new class introduced by TypeSafe AI with [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), answer a typed question such as "which of these options?" in a single forward pass. They return a probability for every option and no text. That fits routing well, so this project tries the approach. Jev is a hosted API and this project must run fully offline, so the experiment uses [Laya](https://huggingface.co/convaiinnovations/laya), an open-source (Apache-2.0) System One model that runs locally and serves a Jev-compatible HTTP API.
+Routing a ticket is a classification: one choice out of five known options. An LLM does it by generating a tool call token by token. System One models, a new class introduced by TypeSafe AI with [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), answer a typed question such as "which of these options?" in a single forward pass. They return a probability for every option and no text. That fits routing well, so this project tries the approach. Jev is a hosted API, while the brief asks for the messages to be interpreted by a local model, so the experiment uses [Laya](https://huggingface.co/convaiinnovations/laya), an open-source (Apache-2.0) System One model that runs locally and serves a Jev-compatible HTTP API.
 
 The brief does not ask for this, and the default engine does not depend on it. To try it, set one line in `.env`:
 
@@ -58,7 +60,7 @@ docker compose up -d
 
 Laya is about 30× faster, but out of the box it routes roughly a third of the Polish tickets to the wrong department, so Ollama stays the default. Language explains only part of the gap. Laya almost never picks the catch-all `other`, and both local engines mix up `help_desk` and `it`. Changing the catalog wording, the checkpoint choice, a probability threshold and a Laya-then-Ollama cascade did not close the gap ([`eval/README.md`](eval/README.md)). The remaining lever is fine-tuning Laya on labelled tickets from the target domain, which is outside this PoC.
 
-For reference, the same tickets were sent once to TypeSafe's hosted System One model, Jev. It scored 96/100 (PL) and 94/100 (EN) at about 0.25 s per ticket, and its probabilities reliably marked the uncertain cases. So the approach itself works, but the open model that runs offline is not yet good enough. The project does not call Jev: it has to work offline, and the measurement is documented in [`eval/README.md`](eval/README.md#reference-typesafe-jev-hosted-not-part-of-the-project).
+For reference, the same tickets were sent once to TypeSafe's hosted System One model, Jev. It scored 96/100 (PL) and 94/100 (EN) at about 0.25 s per ticket, and its probabilities reliably marked the uncertain cases. So the approach itself works, but the open model that runs locally is not yet good enough. The project does not call Jev, because the brief asks for a local model, and the measurement is documented in [`eval/README.md`](eval/README.md#reference-typesafe-jev-hosted-not-part-of-the-project).
 
 ## Architecture decisions
 

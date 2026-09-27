@@ -34,7 +34,7 @@ Correct answers per department (out of 20):
 
 ## Reference: TypeSafe Jev (hosted, not part of the project)
 
-For comparison, the same 200 tickets were sent once to TypeSafe's hosted System One model, Jev (`jev-1.13.0`). The request was the one the API sends to Laya, with the same question and catalog, because Laya serves a Jev-compatible protocol. The project does not call Jev and needs no API key. It must run offline, so this is a one-off reference measurement, and `results/jev-*.csv` holds its per-ticket output.
+For comparison, the same 200 tickets were sent once to TypeSafe's hosted System One model, Jev (`jev-1.13.0`). The request was the one the API sends to Laya, with the same question and catalog, because Laya serves a Jev-compatible protocol. The project does not call Jev and needs no API key. The brief asks for a local model, so this is a one-off reference measurement, and `results/jev-*.csv` holds its per-ticket output.
 
 | Engine | PL | EN | Median time |
 | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ For comparison, the same 200 tickets were sent once to TypeSafe's hosted System 
 
 - **The System One approach works.** Jev was the most accurate engine here and needed about a quarter of a second per ticket. It got every `help_desk` ticket right and scored the same in both languages. Most of its misses are debatable (a broken elevator to `it`, a bike rack question to `help_desk`).
 - **Its probabilities are informative, unlike Laya's.** The 158 answers with a probability of 0.95 or more (about 80% of tickets) were all correct, and every miss had a probability below 0.82. That would allow confidence-gated routing: act on confident answers and send the rest to Ollama or a person.
-- **Why it is not the default.** It needs the internet, which the brief rules out. The local open model that follows the same approach (Laya) is not yet accurate enough without fine-tuning, so Ollama stays the default.
+- **Why it is not the default.** It is a hosted model, and the brief asks for a local one. The local open model that follows the same approach (Laya) is not yet accurate enough without fine-tuning, so Ollama stays the default.
 
 ## What was tried to improve Laya
 
