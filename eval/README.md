@@ -20,17 +20,29 @@ Catalog as committed (`data/departments.csv`, English keyword lists). Measured o
 
 Correct answers per department (out of 20):
 
-| Department | Ollama PL | Ollama EN | Laya PL | Laya EN |
-| --- | --- | --- | --- | --- |
-| kadry | 20 | 19 | 16 | 14 |
-| human_resources | 18 | 18 | 12 | 18 |
-| it | 20 | 19 | 19 | 18 |
-| help_desk | 11 | 9 | 9 | 12 |
-| other | 16 | 19 | 0 | 3 |
+| Department | Ollama PL | Ollama EN | Laya PL | Laya EN | Jev PL | Jev EN |
+| --- | --- | --- | --- | --- | --- | --- |
+| kadry | 20 | 19 | 16 | 14 | 19 | 19 |
+| human_resources | 18 | 18 | 12 | 18 | 20 | 20 |
+| it | 20 | 19 | 19 | 18 | 20 | 19 |
+| help_desk | 11 | 9 | 9 | 12 | 20 | 20 |
+| other | 16 | 19 | 0 | 3 | 17 | 16 |
 
 - **Language is not the main barrier.** Ollama scores the same in both languages. Laya loses 9 points on Polish, but most of its gap to Ollama is on `other` and in both languages.
 - **Laya almost never picks `other`.** The multilingual checkpoint cannot use a catch-all option ("everything else"). The English checkpoint can: it got 17/20 on `other` in the experiments below.
-- **Both engines confuse `help_desk` with `it`.** How-to questions about IT tools ("how do I add an Outlook signature") are the least clear boundary in the brief's department list.
+- **Both local engines confuse `help_desk` with `it`.** How-to questions about IT tools ("how do I add an Outlook signature") are the least clear boundary in the brief's department list.
+
+## Reference: TypeSafe Jev (hosted, not part of the project)
+
+For comparison, the same 200 tickets were sent once to TypeSafe's hosted System One model, Jev (`jev-1.13.0`). The request was the one the API sends to Laya, with the same question and catalog, because Laya serves a Jev-compatible protocol. The project does not call Jev and needs no API key. It must run offline, so this is a one-off reference measurement, and `results/jev-*.csv` holds its per-ticket output.
+
+| Engine | PL | EN | Median time |
+| --- | --- | --- | --- |
+| Jev `jev-1.13.0` (hosted API) | **96/100** | **94/100** | 0.25 s (API call only) |
+
+- **The System One approach works.** Jev was the most accurate engine here and needed about a quarter of a second per ticket. It got every `help_desk` ticket right and scored the same in both languages. Most of its misses are debatable (a broken elevator to `it`, a bike rack question to `help_desk`).
+- **Its probabilities are informative, unlike Laya's.** The 158 answers with a probability of 0.95 or more (about 80% of tickets) were all correct, and every miss had a probability below 0.82. That would allow confidence-gated routing: act on confident answers and send the rest to Ollama or a person.
+- **Why it is not the default.** It needs the internet, which the brief rules out. The local open model that follows the same approach (Laya) is not yet accurate enough without fine-tuning, so Ollama stays the default.
 
 ## What was tried to improve Laya
 

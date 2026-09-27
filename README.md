@@ -56,7 +56,9 @@ docker compose up -d
 | Ollama `qwen2.5:7b` agent (default) | 85/100 | 84/100 | 5.4–6.4 s |
 | Laya `laya-multilingual` | 56/100 | 65/100 | 0.19 s |
 
-Laya is about 30× faster, but out of the box it routes roughly a third of the Polish tickets to the wrong department, so Ollama stays the default. Language explains only part of the gap. Laya almost never picks the catch-all `other`, and both engines mix up `help_desk` and `it`. Changing the catalog wording, the checkpoint choice, a probability threshold and a Laya-then-Ollama cascade did not close the gap ([`eval/README.md`](eval/README.md)). The remaining lever is fine-tuning Laya on labelled tickets from the target domain, which is outside this PoC.
+Laya is about 30× faster, but out of the box it routes roughly a third of the Polish tickets to the wrong department, so Ollama stays the default. Language explains only part of the gap. Laya almost never picks the catch-all `other`, and both local engines mix up `help_desk` and `it`. Changing the catalog wording, the checkpoint choice, a probability threshold and a Laya-then-Ollama cascade did not close the gap ([`eval/README.md`](eval/README.md)). The remaining lever is fine-tuning Laya on labelled tickets from the target domain, which is outside this PoC.
+
+For reference, the same tickets were sent once to TypeSafe's hosted System One model, Jev. It scored 96/100 (PL) and 94/100 (EN) at about 0.25 s per ticket, and its probabilities reliably marked the uncertain cases. So the approach itself works, but the open model that runs offline is not yet good enough. The project does not call Jev: it has to work offline, and the measurement is documented in [`eval/README.md`](eval/README.md#reference-typesafe-jev-hosted-not-part-of-the-project).
 
 ## Architecture decisions
 
