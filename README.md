@@ -2,7 +2,7 @@
 
 PoC of an AI message router. A FastAPI service passes the incoming message to a LangChain agent backed by a local Ollama model. The agent picks a department and calls the `send_email` tool, and MailHog captures the message.
 
-It also contains an experiment: the same decision made by [Laya](https://huggingface.co/convaiinnovations/laya), a local System One decision model, instead of an LLM. It is faster but noticeably less accurate, so it is off by default (see [Experiment: System One engine](#experiment-system-one-engine-laya)).
+It also contains an experiment: the same decision made by [Laya](https://huggingface.co/convaiinnovations/laya), a local System One decision model, instead of an LLM. On 100 Polish and 100 English test tickets it was about 30× faster but noticeably less accurate, so it is off by default (see [Experiment: System One engine](#experiment-system-one-engine-laya) and [`eval/`](eval/README.md)).
 
 ## Run
 
