@@ -2,7 +2,7 @@
 
 PoC of an AI message router. A FastAPI service passes the incoming message to a LangChain agent backed by a local Ollama model. The agent picks a department and calls the `send_email` tool, and MailHog captures the message.
 
-An optional second engine, [Laya](https://huggingface.co/convaiinnovations/laya), can make the same decision with a local System One decision model instead of an LLM (see [Optional: Laya engine](#optional-laya-engine)).
+It also contains an experiment: the same decision made by [Laya](https://huggingface.co/convaiinnovations/laya), a local System One decision model, instead of an LLM. It is faster but noticeably less accurate, so it is off by default (see [Experiment: System One engine](#experiment-system-one-engine-laya)).
 
 ## Run
 
@@ -35,11 +35,11 @@ curl -sS -X POST http://localhost:8000/api/v1/route \
 
 In MailHog, the message has `To: it@example.com` and `Reply-To: jan.nowak@example.com`. If the model never makes a valid tool call, no mail is sent and the API returns `502`.
 
-## Optional: Laya engine
+## Experiment: System One engine (Laya)
 
-Routing a ticket is a classification: one choice out of five known options. An LLM does it by generating a tool call token by token. System One models, a newer class introduced by TypeSafe AI with [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), answer a typed question such as "which of these options?" in a single forward pass. They return a probability for every option and no text. Jev is a hosted API and this task requires local models, so this project uses [Laya](https://huggingface.co/convaiinnovations/laya), an open-source (Apache-2.0) System One model that runs locally and serves a Jev-compatible HTTP API.
+Routing a ticket is a classification: one choice out of five known options. An LLM does it by generating a tool call token by token. System One models, a new class introduced by TypeSafe AI with [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), answer a typed question such as "which of these options?" in a single forward pass. They return a probability for every option and no text. That fits routing well, so this project tries the approach. Jev is a hosted API and this project must run fully offline, so the experiment uses [Laya](https://huggingface.co/convaiinnovations/laya), an open-source (Apache-2.0) System One model that runs locally and serves a Jev-compatible HTTP API.
 
-The brief does not ask for this. It is included because it fits the problem well. To switch engines, set one line in `.env`:
+The brief does not ask for this, and the default engine does not depend on it. To try it, set one line in `.env`:
 
 ```bash
 cp .env.example .env
@@ -47,16 +47,16 @@ cp .env.example .env
 docker compose up -d
 ```
 
-`COMPOSE_PROFILES=${ROUTER_ENGINE}` in `.env` starts the `laya` container. It is built from `laya-serve/Dockerfile` (CPU PyTorch, about 1.5 GB) and downloads the `laya-multilingual` checkpoint (about 650 MB) into a volume. The API waits until the checkpoint is loaded. Ollama still starts, because the brief requires it. The response then reports `"engine": "laya"` and the probability Laya gave the chosen department.
+`COMPOSE_PROFILES=${ROUTER_ENGINE}` in `.env` starts the `laya` container. It is built from `laya-serve/Dockerfile` (CPU PyTorch, about 1.5 GB) and downloads the `laya-multilingual` checkpoint (about 650 MB) into a volume. The API waits until the checkpoint is loaded. Ollama still starts, because the brief requires it. The response then reports `"engine": "laya"` and the probability Laya gave the chosen department. In this mode there is no tool calling. Laya's typed answer takes the place of the tool argument, and the same code sends the mail.
 
-Measured on 100 tickets, each in Polish and in English with the same meaning ([`eval/`](eval/README.md), CPU, Apple M4, API round trip including SMTP):
+**Result: much faster, but accuracy dropped too far.** Measured on 100 tickets, each in Polish and in English with the same meaning ([`eval/`](eval/README.md), CPU, Apple M4, API round trip including SMTP):
 
 | Engine | PL | EN | Median time |
 | --- | --- | --- | --- |
 | Ollama `qwen2.5:7b` agent (default) | 85/100 | 84/100 | 5.4–6.4 s |
 | Laya `laya-multilingual` | 56/100 | 65/100 | 0.19 s |
 
-Laya is about 30× faster but zero-shot clearly less accurate, so Ollama stays the default. Language is not the main reason. Laya almost never picks the catch-all `other`, and both engines mix up `help_desk` and `it`. [`eval/README.md`](eval/README.md) lists what was tried (catalog wording, checkpoint choice, probability thresholds, a Laya-then-Ollama cascade). The lever left is fine-tuning Laya on labelled tickets, which is outside this PoC.
+Laya is about 30× faster, but out of the box it routes roughly a third of the Polish tickets to the wrong department, so Ollama stays the default. Language explains only part of the gap. Laya almost never picks the catch-all `other`, and both engines mix up `help_desk` and `it`. Changing the catalog wording, the checkpoint choice, a probability threshold and a Laya-then-Ollama cascade did not close the gap ([`eval/README.md`](eval/README.md)). The remaining lever is fine-tuning Laya on labelled tickets from the target domain, which is outside this PoC.
 
 ## Architecture decisions
 
