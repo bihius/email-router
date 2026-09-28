@@ -1,0 +1,23 @@
+# Keep the build context minimal - only requirements.txt, app/ and data/ are copied in.
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+.env
+.env.*
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+eval/
+tests/
+laya-serve/
+
+README.md
+README.pl.md
+LICENSE
