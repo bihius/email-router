@@ -1,5 +1,7 @@
 # email-router
 
+[![CI](https://github.com/bihius/email-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bihius/email-router/actions/workflows/ci.yml)
+
 [Wersja polska](README.pl.md)
 
 PoC of an AI message router. A FastAPI service passes the incoming message to a LangChain agent backed by a local Ollama model. The agent picks a department and calls the `send_email` tool, and MailHog captures the message.

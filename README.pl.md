@@ -1,5 +1,7 @@
 # email-router
 
+[![CI](https://github.com/bihius/email-router/actions/workflows/ci.yml/badge.svg)](https://github.com/bihius/email-router/actions/workflows/ci.yml)
+
 [English version](README.md)
 
 PoC routera wiadomości opartego na AI. Serwis FastAPI przekazuje wiadomość agentowi LangChain, który korzysta z lokalnego modelu w Ollamie. Agent wybiera dział i wywołuje narzędzie `send_email`, a MailHog przechwytuje wysłany e-mail.
