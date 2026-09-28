@@ -6,7 +6,7 @@
 
 PoC routera wiadomości opartego na AI. Serwis FastAPI przekazuje wiadomość agentowi LangChain, który korzysta z lokalnego modelu w Ollamie. Agent wybiera dział i wywołuje narzędzie `send_email`, a MailHog przechwytuje wysłany e-mail.
 
-Projekt zawiera też eksperyment: tę samą decyzję podejmuje [Laya](https://huggingface.co/convaiinnovations/laya), lokalny model decyzyjny typu System One, zamiast LLM. Na 100 polskich i 100 angielskich zgłoszeniach testowych był ok. 30 razy szybszy, ale wyraźnie mniej trafny, dlatego domyślnie jest wyłączony (zob. [Eksperyment: silnik System One](#eksperyment-silnik-system-one-laya) i [`eval/`](eval/README.md)).
+Projekt zawiera też eksperyment: tę samą decyzję podejmuje [Laya](https://huggingface.co/convaiinnovations/laya), lokalny model decyzyjny typu System One, zamiast LLM. Na 100 polskich i 100 angielskich zgłoszeniach testowych był ponad 200 razy szybszy od domyślnego agenta, ale dużo mniej trafny, dlatego domyślnie jest wyłączony (zob. [Eksperyment: silnik System One](#eksperyment-silnik-system-one-laya) i [`eval/`](eval/README.md)).
 
 ## Uruchomienie
 
@@ -15,7 +15,7 @@ cp .env.example .env   # opcjonalne: tylko gdy chcesz zmienić ustawienia domyś
 docker compose up -d
 ```
 
-Przy pierwszym starcie kontener `ollama-pull` pobiera model (`qwen2.5:7b`, ok. 4,7 GB). API czeka na koniec pobierania, a jego kontener zgłasza stan `healthy`, gdy przyjmuje zapytania (`docker compose up -d --wait` czeka do tego momentu). Na CPU pierwsze zapytanie dodatkowo ładuje model do pamięci i może chwilę potrwać.
+Przy pierwszym starcie kontener `ollama-pull` pobiera model (`qwen3:8b`, ok. 5,2 GB). API czeka na koniec pobierania, a jego kontener zgłasza stan `healthy`, gdy przyjmuje zapytania (`docker compose up -d --wait` czeka do tego momentu). Na CPU pierwsze zapytanie dodatkowo ładuje model do pamięci; na Apple M4 trwało to prawie 3 minuty, a kolejne, dopóki model jest w pamięci, zajmują ok. 50 s (zob. [Decyzje architektoniczne](#decyzje-architektoniczne)).
 
 | Usługa | Adres |
 | --- | --- |
@@ -57,12 +57,13 @@ docker compose up -d
 
 | Silnik | PL | EN | Mediana czasu |
 | --- | --- | --- | --- |
-| Agent Ollama `qwen2.5:7b` (domyślny) | 85/100 | 84/100 | 5,4–6,4 s |
+| Agent Ollama `qwen3:8b` (domyślny) | 94/100 | 94/100 | 46–51 s |
+| Agent Ollama `qwen2.5:7b` (poprzedni domyślny) | 85/100 | 84/100 | 5,4–6,4 s |
 | Laya `laya-multilingual` | 56/100 | 65/100 | 0,19 s |
 
-Laya jest ok. 30 razy szybsza, ale bez douczenia kieruje mniej więcej co trzecie polskie zgłoszenie do złego działu, dlatego domyślnym silnikiem zostaje Ollama. Język tłumaczy tylko część tej różnicy. Laya prawie nigdy nie wybiera działu `other` (opcja „wszystko inne”), a oba lokalne silniki mylą `help_desk` z `it`. Zmiana opisów działów, wybór innego checkpointu, próg prawdopodobieństwa ani kaskada „najpierw Laya, potem Ollama” nie zniwelowały różnicy ([`eval/README.md`](eval/README.md)). Pozostaje douczenie (fine-tuning) Lai na oznaczonych zgłoszeniach z danej dziedziny, co wykracza poza ten PoC.
+Laya jest ok. 250 razy szybsza od agenta z `qwen3:8b`, ale bez douczenia kieruje 44 ze 100 polskich zgłoszeń do złego działu, dlatego domyślnym silnikiem zostaje agent. Język tłumaczy tylko część tej różnicy. Laya prawie nigdy nie wybiera działu `other` (opcja „wszystko inne”) i myli `help_desk` z `it`, podobnie jak wcześniej `qwen2.5:7b`. Zmiana opisów działów, wybór innego checkpointu, próg prawdopodobieństwa ani kaskada „najpierw Laya, potem agent” nie zniwelowały różnicy ([`eval/README.md`](eval/README.md)). Pozostaje douczenie (fine-tuning) Lai na oznaczonych zgłoszeniach z danej dziedziny, co wykracza poza ten PoC.
 
-Dla porównania te same zgłoszenia wysłano jednorazowo do modelu Jev, czyli modelu System One od TypeSafe, działającego w chmurze. Uzyskał 96/100 (PL) i 94/100 (EN) przy ok. 0,25 s na zgłoszenie, a jego prawdopodobieństwa dobrze wskazywały niepewne przypadki. Samo podejście więc działa, ale otwarty model działający lokalnie nie jest jeszcze wystarczająco dobry. Projekt nie korzysta z Jeva, bo zadanie wymaga modelu lokalnego. Pomiar jest opisany w [`eval/README.md`](eval/README.md#reference-typesafe-jev-hosted-not-part-of-the-project).
+Dla porównania te same zgłoszenia wysłano jednorazowo do modelu Jev, czyli modelu System One od TypeSafe, działającego w chmurze. Uzyskał 96/100 (PL) i 94/100 (EN). Przy `qwen2.5:7b` wyglądało to na wyraźną przewagę podejścia System One w trafności, ale agent z `qwen3:8b` praktycznie tę różnicę zniwelował (94/100 w obu językach), więc sama trafność już ich nie rozróżnia. Różnią je szybkość i pewność odpowiedzi. Jev odpowiada w ok. 0,25 s, mniej więcej 200 razy szybciej niż agent, a jego prawdopodobieństwo wiarygodnie wskazuje odpowiedzi, które mogą być błędne. Oba silniki mylą się też zwykle na innych zgłoszeniach: gdyby brać odpowiedź Jeva, gdy jego prawdopodobieństwo wynosi co najmniej 0,95, a w pozostałych przypadkach odpowiedź agenta, wynik wyniósłby 97/100 (PL) i 96/100 (EN), a do wolnego modelu trafiałoby tylko ok. co piąte zgłoszenie. To wyliczenie na zapisanych wynikach, a nie zaimplementowane rozwiązanie. Projekt nie korzysta z Jeva, bo zadanie wymaga modelu lokalnego, a otwarty model System One działający lokalnie nie jest jeszcze wystarczająco dobry. Pomiar jest opisany w [`eval/README.md`](eval/README.md#reference-typesafe-jev-hosted-not-part-of-the-project).
 
 Szczegółowe wyniki eksperymentu (`eval/README.md`) są po angielsku.
 
@@ -71,10 +72,10 @@ Szczegółowe wyniki eksperymentu (`eval/README.md`) są po angielsku.
 - **Jedno narzędzie z ograniczonym argumentem.** Agent ma jedno narzędzie `send_email(department)`. Schemat argumentu to `Literal` z nazwami działów z katalogu. Jeśli model poda nazwę spoza katalogu, walidacja ją odrzuca, a agent przekazuje modelowi błąd, żeby mógł spróbować ponownie. Liczba kroków agenta jest ograniczona i na jedno zapytanie wychodzi najwyżej jeden mail. Jeśli model po wysłaniu maila dalej wywołuje narzędzie, zapytanie i tak kończy się sukcesem.
 - **Routing tylko przez ustrukturyzowaną decyzję.** Aplikacja nigdy nie wyciąga nazwy działu z dowolnego tekstu wygenerowanego przez model. W przypadku Ollamy decyzją jest wywołanie narzędzia: bez wywołania nie ma maila. W przypadku Lai jest to odpowiedź typu `choice`, która może być tylko jedną z nazw z katalogu. Mail w obu przypadkach wysyła ten sam kod.
 - **Model wybiera, kod adresuje maila.** Model widzi nazwy i opisy działów, ale nigdy adresów. `To` pochodzi z katalogu, `Reply-To` to nadawca z zapytania, a treścią jest oryginalna wiadomość.
-- **Katalog działów w `data/departments.csv`** (`name`, `email`, `description`). Oba silniki biorą z niego listę opcji, więc nowy dział to jeden nowy wiersz. Plik musi zawierać wiersz `other` jako fallback. Opisy działów to krótkie listy angielskich słów kluczowych. Spośród trzech wariantów opisów porównanych w [`eval/`](eval/README.md) ten dał najlepsze wyniki dla obu silników.
+- **Katalog działów w `data/departments.csv`** (`name`, `email`, `description`). Oba silniki biorą z niego listę opcji, więc nowy dział to jeden nowy wiersz. Plik musi zawierać wiersz `other` jako fallback. Opisy działów to krótkie listy angielskich słów kluczowych. Spośród trzech wariantów opisów porównanych w [`eval/`](eval/README.md) na Lai i poprzednim domyślnym modelu (`qwen2.5:7b`) ten dał najlepsze wyniki w obu przypadkach.
 - **Model dostaje oczyszczony tekst, mail zawiera oryginał.** Zanim wiadomość trafi do któregokolwiek silnika, adresy data URI i długie ciągi base64 (np. obrazki wklejone w stopkę maila) są zastępowane przez `[attachment omitted]`, a wszystko po linii separatora podpisu (`-- ` lub `--`) jest usuwane. Jeden osadzony obrazek może być większy niż kontekst 2048 tokenów, a podpis dodaje słowa, które tylko przeszkadzają w klasyfikacji. Przekazywany mail zawiera pełną, oryginalną wiadomość.
 - **Gotowość po `docker compose up -d`.** Jednorazowy kontener `ollama-pull` pobiera wagi modelu, a API startuje dopiero po jego udanym zakończeniu (a przy włączonej Lai także po tym, jak Laya zgłosi gotowość). Ollama, Laya i SMTP są dostępne tylko w sieci Compose. Na zewnątrz wystawione są tylko API i panel MailHoga. Wersje obrazów i zależności Pythona są przypięte.
-- **Model `qwen2.5:7b`, temperatura 0, kontekst 2048.** Obsługuje wywołania narzędzi w Ollamie i działa akceptowalnie na CPU. Silnik, model, timeout, rozmiar kontekstu i poziom logowania można zmienić w `.env` (zob. `.env.example`).
+- **Model `qwen3:8b`, temperatura 0, kontekst 2048.** Obsługuje wywołania narzędzi w Ollamie i jest najtrafniejszym z mierzonych lokalnych silników: 94/100 w obu językach wobec 85/100 i 84/100 dla poprzedniego domyślnego `qwen2.5:7b`. Ceną jest czas. qwen3 przed odpowiedzią rozumuje (tak działa domyślnie w Ollamie), więc na CPU jedno zgłoszenie zajmuje ok. 50 s zamiast 6 s, a pierwsze zapytanie, które dodatkowo ładuje model, trwało prawie 3 minuty. Dlatego domyślny timeout Ollamy to 300 s. Przy routingu maili właściwy dział jest ważniejszy niż minuta opóźnienia. Gdy liczy się czas, wystarczy ustawić `OLLAMA_MODEL=qwen2.5:7b` w `.env`. Silnik, model, timeout, rozmiar kontekstu i poziom logowania można zmienić w `.env` (zob. `.env.example`).
 
 ## Testy
 
