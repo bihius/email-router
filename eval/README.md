@@ -48,6 +48,8 @@ For comparison, the same 200 tickets were sent once to TypeSafe's hosted System 
 
 Laya results come from calling the Laya container directly with the same question the API sends. Ollama runs go through the API. The catalog variants were compared on this same set, so treat the winning variant's score as slightly optimistic.
 
+Per-ticket files in `results/` exist only for the committed configuration (the bold row); the other rows are summary measurements and no raw output was kept for them. Missing cells say why a run does not appear: `not run` when a variant had already lost on the other legs, `n/a` when the variant does not apply, `≤` when a sweep of the parameter did not help, and blank when there was nothing to run for that engine.
+
 | Change | Laya PL | Laya EN | Ollama PL | Ollama EN |
 | --- | --- | --- | --- | --- |
 | Keyword lists with Polish terms (previous catalog) | 53 | 53 | 83 | 84 |
