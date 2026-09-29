@@ -2,7 +2,7 @@
 
     python eval/run.py pl        # or: en
     python eval/run.py pl --url http://localhost:8000
-    python eval/run.py pl --tag nothink
+    python eval/run.py pl --tag thinking
 
 The engine is whatever the API runs (ROUTER_ENGINE in .env). Per-ticket results go to
 eval/results/<engine>-<lang>.csv, or <engine>-<tag>-<lang>.csv with --tag. Every ticket
@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("lang", choices=["pl", "en"])
     parser.add_argument("--url", default="http://localhost:8000")
-    parser.add_argument("--tag", default="", help="added to the result file name, e.g. nothink")
+    parser.add_argument("--tag", default="", help="added to the result file name, e.g. thinking")
     args = parser.parse_args()
 
     with (HERE / "tickets.csv").open(encoding="utf-8", newline="") as handle:

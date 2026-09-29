@@ -157,9 +157,10 @@ class EngineSwitchTest(unittest.TestCase):
 
 
 class OllamaThinkTest(unittest.TestCase):
-    def test_setting_reaches_the_model(self) -> None:
-        for value, expected in (("", None), ("false", False), ("True", True)):
-            with self.subTest(value=value), patch.dict(os.environ, {"OLLAMA_THINK": value}):
+    def test_off_by_default_and_setting_reaches_the_model(self) -> None:
+        cases = (({}, False), ({"OLLAMA_THINK": ""}, False), ({"OLLAMA_THINK": "false"}, False), ({"OLLAMA_THINK": "True"}, True))
+        for env, expected in cases:
+            with self.subTest(env=env), patch.dict(os.environ, env, clear=True):
                 model = ScriptedModel(messages=iter([tool_call("it"), DONE]), seen=[])
                 with (
                     patch("app.router.ChatOllama", return_value=model) as chat,

@@ -26,11 +26,9 @@ def ollama_timeout() -> float:
     return float(os.environ.get("OLLAMA_TIMEOUT", "300"))
 
 
-def ollama_think() -> bool | None:
-    """Ollama's think option: false turns off qwen3's reasoning, unset keeps the model default."""
-    value = os.environ.get("OLLAMA_THINK", "").strip().lower()
-    if not value:
-        return None
+def ollama_think() -> bool:
+    """Ollama's think option. Off by default, so qwen3 answers without reasoning first."""
+    value = os.environ.get("OLLAMA_THINK", "").strip().lower() or "false"
     if value not in ("true", "false"):
         raise ValueError(f"OLLAMA_THINK must be true or false, got {value!r}")
     return value == "true"

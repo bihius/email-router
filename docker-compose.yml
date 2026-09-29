@@ -49,7 +49,7 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
       OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-300}
-      OLLAMA_THINK: "${OLLAMA_THINK:-}"
+      OLLAMA_THINK: "${OLLAMA_THINK:-false}"
       OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-2048}
       LAYA_URL: http://laya:8000
       LOG_LEVEL: ${LOG_LEVEL:-warning}
