@@ -8,7 +8,7 @@ from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel, Field
 
 from app import laya, mailer
-from app.config import Engine, ollama_base_url, ollama_model, ollama_num_ctx, ollama_timeout
+from app.config import Engine, ollama_base_url, ollama_model, ollama_num_ctx, ollama_think, ollama_timeout
 from app.departments import DEPARTMENTS, Department, get_department
 from app.text import text_for_model
 
@@ -93,6 +93,7 @@ def _route_with_agent(text: str, *, message: str, reply_to: str) -> Department:
         base_url=ollama_base_url(),
         num_ctx=ollama_num_ctx(),
         temperature=0,
+        reasoning=ollama_think(),
         client_kwargs={"timeout": ollama_timeout()},
     )
     agent = create_agent(model, tools=[send_email], system_prompt=system_prompt())

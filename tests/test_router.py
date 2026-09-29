@@ -6,7 +6,7 @@ import httpx
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import AIMessage
 
-from app.config import router_engine
+from app.config import ollama_think, router_engine
 from app.departments import DEPARTMENTS, get_department
 from app.router import ModelDidNotCallTool, route_ticket
 
@@ -154,6 +154,23 @@ class EngineSwitchTest(unittest.TestCase):
     def test_rejects_unknown_engine(self) -> None:
         with patch.dict(os.environ, {"ROUTER_ENGINE": "gpt"}), self.assertRaises(ValueError):
             router_engine()
+
+
+class OllamaThinkTest(unittest.TestCase):
+    def test_setting_reaches_the_model(self) -> None:
+        for value, expected in (("", None), ("false", False), ("True", True)):
+            with self.subTest(value=value), patch.dict(os.environ, {"OLLAMA_THINK": value}):
+                model = ScriptedModel(messages=iter([tool_call("it"), DONE]), seen=[])
+                with (
+                    patch("app.router.ChatOllama", return_value=model) as chat,
+                    patch("app.mailer.send_email"),
+                ):
+                    route_ticket(message="Nie działa mi komputer", reply_to="jan.nowak@example.com")
+                self.assertIs(chat.call_args.kwargs["reasoning"], expected)
+
+    def test_rejects_invalid_value(self) -> None:
+        with patch.dict(os.environ, {"OLLAMA_THINK": "maybe"}), self.assertRaises(ValueError):
+            ollama_think()
 
 
 if __name__ == "__main__":
